@@ -36,16 +36,24 @@ int parse(char word[]){
     // char string[wordLen];
     // strncpy(string,word,wordLen);
     // printf("Trimmed string: %s\n",string);
+    // word[strlen(word)-1] = 0;
+    char front[] = "grep ";
+    strcat(front,word);
+    char back[] = " words_alpha.txt -w";
+    strcat(front,back);
+    printf("String: %s\n",front);
     char * cmdargv[64];
-    parse_args(word,cmdargv);
+    parse_args(front,cmdargv);
     execvp(cmdargv[0],cmdargv);
     return 0;
 }
 //---------------------------------------------------------------------------------------------
 int main(int argc, char * argv[]){
+    
     printf("Tests:\n");
-    char b[] = "grep -e hi words_alpha.txt -w";
-    int i = parse(b);
+    char c[] = "yes";
+    int i;
+    i = parse(c);
     printf("returned: %d\n", i);
 }
 
