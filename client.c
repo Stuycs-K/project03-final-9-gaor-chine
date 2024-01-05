@@ -31,8 +31,8 @@ int main(int argc, char *argv[] ) {
   }
   int server_socket = client_tcp_handshake(IP);
   printf("client connected.\n");
-  while(1){
+  //while(1){
     clientLogic(server_socket);
-  }
+  //}
 }
 

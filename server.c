@@ -16,6 +16,7 @@ void subserver_logic(int client_socket){
     //printf("reading...\n");
     int b = read(client_socket, line, BUFFER_SIZE);
     if (b == -1) err(13, "server read broke");
+    printf("\nRecieved from client '%s'\n",line);
     //printf("processing...\n");
     rot13(line);
     //printf("writing...\n");
@@ -26,6 +27,9 @@ void subserver_logic(int client_socket){
 int main(int argc, char *argv[] ) { 
 
     int listen_socket = server_setup();
+    fd_set read_fds;
+
+    char buff[1025]="";
 
     while (1){
 
@@ -40,21 +44,12 @@ int main(int argc, char *argv[] ) {
             int client_socket = server_tcp_handshake(listen_socket);
             printf("Connected, waiting for data.\n");
 
-            subserver_logic(client_socket);
+            //while(1){
+                subserver_logic(client_socket);
+            //}
 
-            printf("\nRecieved from client '%s'\n",buff);
             //close(client_socket);
         }
-
-        //printf("client connected.\n");
-
-        // int f = fork();
-        // if (f == 0){
-        //     while(1) {
-                // subserver_logic(client_socket);
-            // }
-        // }
-        
     }
 }
 
