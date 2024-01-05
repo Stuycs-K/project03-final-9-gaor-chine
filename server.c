@@ -32,6 +32,7 @@ int main(int argc, char *argv[] ) {
     int clients[MAX_CLIENTS]; // store client socket file descriptors
     for (int x = 0; x < MAX_CLIENTS; x++) clients[x] = 0; // initialize
     fd_set read_fds;
+    char buff[BUFFER_SIZE]="";
 
     while (1){
         
@@ -48,6 +49,14 @@ int main(int argc, char *argv[] ) {
         }
         printf("%d clients connected.\n", cur_clients);
         int i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
+
+        //if standard in, use fgets
+        if (FD_ISSET(STDIN_FILENO, &read_fds)) {
+            fgets(buff, sizeof(buff), stdin);
+            stripNewLine(buff);
+            write(server_socket, buff, strlen(buff));
+            //printf("Recieved from terminal: '%s'\n",buff);
+        }
 
         // if listen_socket, accept connection and add to client sockets array
         if (FD_ISSET(listen_socket, &read_fds)) {
@@ -75,7 +84,6 @@ int main(int argc, char *argv[] ) {
             if (FD_ISSET(sd, &read_fds)){
 
                 //check if client exited
-                char buff[BUFFER_SIZE];
                 int bytes = read(sd, buff, BUFFER_SIZE);
                 if (bytes == -1) err(80, "check client exit failed\n");
                 if (bytes == 0){
