@@ -1,6 +1,6 @@
 default:
 compile runme: gameFunctions.o gameFunctions.h
-	@gcc gameFuctions.o gameFunctions.h -o runme
+	@gcc gameFunctions.o gameFunctions.h -o runme
 run: runme
 	@./runme
 clean: 
