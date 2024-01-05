@@ -33,18 +33,20 @@ int main(int argc, char *argv[] ) {
     for (int x = 0; x < MAX_CLIENTS; x++) clients[x] = 0; // initialize
     fd_set read_fds;
 
-    char buff[1025]="";
-
     while (1){
         
+        int cur_clients = 0;
         FD_ZERO(&read_fds);
         FD_SET(listen_socket,&read_fds);
         for (int x = 0; x < MAX_CLIENTS; x++){
             if (clients[x] > 0){
                 FD_SET(clients[x], &read_fds); // add clients to fds
+                cur_clients += 1;
             }
             if (clients[x] > max_sd) max_sd = clients[x]; // update max socket descriptor
+
         }
+        printf("%d clients connected.\n", cur_clients);
         int i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
 
         // if listen_socket, accept connection and add to client sockets array
@@ -52,8 +54,12 @@ int main(int argc, char *argv[] ) {
             //accept the connection
             int client_socket = server_tcp_handshake(listen_socket);
             for (int x = 0; x < MAX_CLIENTS; x++){
-                if (clients[x] == 0) clients[x] = client_socket;
-                break; //to add once
+                //printf("%d\n", clients[x]);
+                if (clients[x] == 0){
+                    clients[x] = client_socket;
+                    printf("%d sd %d added to client list.\n", x, clients[x]);
+                    break; //to add once
+                }
             }
             printf("Connected, waiting for data.\n");
 

@@ -38,6 +38,7 @@ int server_tcp_handshake(int listen_socket){
     struct sockaddr_storage client_address;
     sock_size = sizeof(client_address);
     client_socket = accept(listen_socket,(struct sockaddr *)&client_address, &sock_size);
+    if (client_socket == -1) err(41, "server_tcp_handshake couldn't accept");
   
     return client_socket;
 }
