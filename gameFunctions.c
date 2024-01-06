@@ -64,13 +64,13 @@ int parse(char word[]){
     return 0;
 }
 //---------------------------------------------------------------------------------------------
-int main(int argc, char * argv[]){
+// int main(int argc, char * argv[]){
     
-    printf("Tests:\n");
-    char c[] = "apply";
-    int i;
-    i = parse(c);
-    // printf("returned: %d\n", i);
-}
+//     printf("Tests:\n");
+//     char c[] = "apply";
+//     int i;
+//     i = parse(c);
+//     // printf("returned: %d\n", i);
+// }
 
 
