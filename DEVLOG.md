@@ -29,3 +29,7 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - imported old exec lab code
 - created a parse command to exec grep to search for a specific word in a file rather than a long while loop, will add more checks to make sure the entered word follows all rules
 - learned about grep and its flags
+
+### 2024-01-05 - piping grep
+- decided to implement pipe to obtain the output of grep
+- tried fixing bugs, still in process, ready to implement the last check for used words once bug is fixed
