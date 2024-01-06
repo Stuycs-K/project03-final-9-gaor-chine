@@ -15,6 +15,7 @@
 
 #define BUFFERSIZE 100
 #define READ 0
+#define WRITE 1
 // #define WRITE 1
 
 struct player{char name[BUFFERSIZE];int lives;};
@@ -38,39 +39,42 @@ void parse_args(char * line, char * args[]){
 }
 /*
 parses words_alpha.txt for the inputed word
-returns 1 if word doesn't exist
+returns 1 if word doesn't exist and abides by the rules;
 returns 0 of word exists
 */
 int parse(char word[]){
     char * cmdargv[64];
-    char front[100] = "grep ";
-    char back[] = " words_alpha.txt -w";
-
-    int usedWords = open("usedWords.txt" , O_CREAT|O_RDWR,644 );
-    // printf("String: %s\n",front);
-    strcat(front,word);
-    // printf("String: %s\n",front);
-    strcat(front,back);
-    // printf("String: %s\n",front);
-    parse_args(front,cmdargv);
-    
-    char grepReturn[100];
-    execvp(cmdargv[0],cmdargv);
-    // fgets(grepReturn, 100, stdout);
-    int sOut = open("/dev/stdout",100,O_RDONLY);
-    int i = read(sOut,grepReturn,100);
-    err(i, "fgets fails");
-    printf("returned val: %s\n", grepReturn);
+    int fds[2];
+    int pid = getpid();
+    pipe(fds);
+    int f = fork();
+    if(getppid() == pid){
+        close(fds[READ]);
+        char front[100] = "grep ";
+        char back[] = " words_alpha.txt -w";
+        int usedWords = open("usedWords.txt" , O_CREAT|O_RDWR,644);
+        strcat(front,word);
+        strcat(front,back);
+        parse_args(front,cmdargv);
+        dup2(fds[0],fds[1]);
+        execvp(cmdargv[0],cmdargv);
+        exit(0);
+    }else{
+        close(fds[WRITE]);
+        char string[1000];
+        read(fds[0],string,strlen(word)+1);
+        printf("output from stdout: %s\n",string);
+    }
     return 0;
 }
 //---------------------------------------------------------------------------------------------
-// int main(int argc, char * argv[]){
+int main(int argc, char * argv[]){
     
-//     printf("Tests:\n");
-//     char c[] = "apply";
-//     int i;
-//     i = parse(c);
-//     // printf("returned: %d\n", i);
-// }
+    printf("Tests:\n");
+    char c[] = "yes";
+    int i;
+    i = parse(c);
+    // printf("returned: %d\n", i);
+}
 
 
