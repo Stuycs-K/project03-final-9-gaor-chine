@@ -1,15 +1,6 @@
 #include "networking.h"
 #include "gameFunctions.h"
 
-void stripNewLine(char* input){
-    for(int x = 0; x < strlen(input); x++){
-        if (strcmp(&input[x], "\n") == 0 || strcmp(&input[x], "\r") == 0){
-            input[x] = 0; // removes new line
-            break;
-        }
-    } 
-}
-
 void clientLogic(int server_socket){
     char line[BUFFER_SIZE];
     printf("enter your message:\n");
@@ -33,18 +24,27 @@ int main(int argc, char *argv[] ) {
     printf("client connected.\n");
     int max_sd = server_socket;
     fd_set read_fds;
+    char buff[BUFFER_SIZE] = "";
 
     while(1){
 
         FD_ZERO(&read_fds);
         FD_SET(server_socket,&read_fds);
+        FD_SET(STDIN_FILENO,&read_fds);
         int i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
 
+        //if standard in, use fgets, writes to server
+        if (FD_ISSET(STDIN_FILENO, &read_fds)) {
+            fgets(buff, BUFFER_SIZE, stdin);
+            stripNewLine(buff);
+            write(server_socket, buff, BUFFER_SIZE);
+            
+        }
+
         if (FD_ISSET(server_socket, &read_fds)) { //listening from server
-            char buff[BUFFER_SIZE];
             int bytes = read(server_socket, buff, BUFFER_SIZE);
             if (bytes == -1) err(80, "check server exit failed\n");
-            if (bytes == 0){
+            if (bytes == 0){ //server disconnect
                 printf("server has disconnected.\n");
                 exit(0);
             }

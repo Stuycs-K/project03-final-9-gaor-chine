@@ -50,14 +50,6 @@ int main(int argc, char *argv[] ) {
         printf("%d clients connected.\n", cur_clients);
         int i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
 
-        //if standard in, use fgets
-        if (FD_ISSET(STDIN_FILENO, &read_fds)) {
-            fgets(buff, sizeof(buff), stdin);
-            stripNewLine(buff);
-            write(server_socket, buff, strlen(buff));
-            //printf("Recieved from terminal: '%s'\n",buff);
-        }
-
         // if listen_socket, accept connection and add to client sockets array
         if (FD_ISSET(listen_socket, &read_fds)) {
             //accept the connection

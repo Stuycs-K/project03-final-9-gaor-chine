@@ -76,6 +76,15 @@ int server_setup() {
   return clientd;
 }
 
+void stripNewLine(char* input){
+    for(int x = 0; x < strlen(input); x++){
+        if (strcmp(&input[x], "\n") == 0 || strcmp(&input[x], "\r") == 0){
+            input[x] = 0; // removes new line
+            break;
+        }
+    } 
+}
+
 void err(int i, char*message){
   if(i < 0){
 	  printf("Error: %s - %s\n",message, strerror(errno));
