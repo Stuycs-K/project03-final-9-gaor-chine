@@ -12,6 +12,11 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - edited code to allow multiple clients to connect using select
 - tested multiple clients and works but did not implement checking for when clients exit yet
 
+### 2024-01-05 - Disconnections and client stdin
+- added select to client to check for server status
+- server and clients can tell if each other have disconnected (server removes client from fds, client exits)
+- clients can write to server using stdin and server returns processed string
+
 
 ## Edmund Chin
 
