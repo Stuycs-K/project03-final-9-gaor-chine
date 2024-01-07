@@ -12,19 +12,28 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include "networking.h"
 
 #define BUFFERSIZE 100
 #define READ 0
 // #define WRITE 1
 
-struct player{char name[BUFFERSIZE];int lives;};
+struct player{char name[BUFFERSIZE];int lives;int sd;};
 
-void err(int i, char*message){
-  if(i < 0){
-	  printf("Error: %s - %s\n",message, strerror(errno));
-  	exit(1);
-  }
+struct player* create_player(char *name, int sd){
+    struct player *p = malloc(sizeof(struct player));
+    strcpy(p->name, name);
+    p->lives = 2;
+    p->sd = sd;
+    return p;
 }
+
+// void err(int i, char*message){
+//   if(i < 0){
+// 	  printf("Error: %s - %s\n",message, strerror(errno));
+//   	exit(1);
+//   }
+// }
 
 void parse_args(char * line, char * args[]){
     char * linePointer = line;

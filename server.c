@@ -11,7 +11,7 @@ void rot13(char* line){
     }
 }
 
-void processing_logic(int client_socket, char* line){
+void processing_logic(struct player* p, char* line){
     //char line[BUFFER_SIZE];
     //printf("reading...\n");
     //int b = read(client_socket, line, BUFFER_SIZE);
@@ -20,7 +20,7 @@ void processing_logic(int client_socket, char* line){
     //printf("processing...\n");
     rot13(line);
     //printf("writing...\n");
-    int b = write(client_socket, line, BUFFER_SIZE);
+    int b = write(p->sd, line, BUFFER_SIZE);
     if (b == -1) err(16, "server write broke");
 }
 
@@ -31,6 +31,9 @@ int main(int argc, char *argv[] ) {
     int MAX_CLIENTS = 10;
     int clients[MAX_CLIENTS]; // store client socket file descriptors
     for (int x = 0; x < MAX_CLIENTS; x++) clients[x] = 0; // initialize
+    
+    struct player** players = calloc(MAX_CLIENTS, sizeof(struct player));
+    
     fd_set read_fds;
     char buff[BUFFER_SIZE]="";
 
@@ -39,13 +42,21 @@ int main(int argc, char *argv[] ) {
         int cur_clients = 0;
         FD_ZERO(&read_fds);
         FD_SET(listen_socket,&read_fds);
-        for (int x = 0; x < MAX_CLIENTS; x++){
-            if (clients[x] > 0){
-                FD_SET(clients[x], &read_fds); // add clients to fds
-                cur_clients += 1;
-            }
-            if (clients[x] > max_sd) max_sd = clients[x]; // update max socket descriptor
+        // for (int x = 0; x < MAX_CLIENTS; x++){
+        //     if (clients[x] > 0){
+        //         FD_SET(clients[x], &read_fds); // add clients to fds
+        //         cur_clients += 1;
+        //     }
+        //     if (clients[x] > max_sd) max_sd = clients[x]; // update max socket descriptor
 
+        // }
+        for (int x = 0; x < MAX_CLIENTS; x++){
+            if (players[x] != NULL){
+                struct player* player = players[x];
+                FD_SET(player->sd, &read_fds); // add clients to fds
+                cur_clients += 1;
+                if (player->sd > max_sd) max_sd = player->sd; // update max socket descriptor
+            }
         }
         printf("%d clients connected.\n", cur_clients);
         int i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
@@ -54,11 +65,22 @@ int main(int argc, char *argv[] ) {
         if (FD_ISSET(listen_socket, &read_fds)) {
             //accept the connection
             int client_socket = server_tcp_handshake(listen_socket);
+            read(client_socket, buff, BUFFER_SIZE);
+            struct player * p = create_player(buff, client_socket);
+
+            // for (int x = 0; x < MAX_CLIENTS; x++){
+            //     //printf("%d\n", clients[x]);
+            //     if (clients[x] == 0){
+            //         clients[x] = client_socket;
+            //         printf("%d sd %d added to client list.\n", x, clients[x]);
+            //         break; //to add once
+            //     }
+            // }
             for (int x = 0; x < MAX_CLIENTS; x++){
                 //printf("%d\n", clients[x]);
-                if (clients[x] == 0){
-                    clients[x] = client_socket;
-                    printf("%d sd %d added to client list.\n", x, clients[x]);
+                if (players[x] == NULL){
+                    players[x] = p;
+                    printf("%d sd %d added to client list.\n", x, p->sd);
                     break; //to add once
                 }
             }
@@ -72,7 +94,8 @@ int main(int argc, char *argv[] ) {
         //if existing client
         for (int x = 0; x < MAX_CLIENTS; x++){
 
-            int sd = clients[x];
+            //int sd = clients[x];
+            int sd = players[x]->sd;
             if (FD_ISSET(sd, &read_fds)){
 
                 //check if client exited
@@ -80,10 +103,11 @@ int main(int argc, char *argv[] ) {
                 if (bytes == -1) err(80, "check client exit failed\n");
                 if (bytes == 0){
                     printf("client %d has disconnected.\n", x);
-                    clients[x] = 0;
+                    // clients[x] = 0;
+                    players[x] = 0;
                 }
                 else{
-                    processing_logic(sd, buff);
+                    processing_logic(players[x], buff);
                 }
             }
 

@@ -22,9 +22,15 @@ int main(int argc, char *argv[] ) {
     }
     int server_socket = client_tcp_handshake(IP);
     printf("client connected.\n");
+    
+    printf("Enter your username: ");
+    char buff[BUFFER_SIZE] = "";
+    fgets(buff, BUFFER_SIZE, stdin);
+    stripNewLine(buff);
+    write(server_socket, buff, BUFFER_SIZE);
+
     int max_sd = server_socket;
     fd_set read_fds;
-    char buff[BUFFER_SIZE] = "";
 
     while(1){
 
