@@ -28,6 +28,8 @@ int main(int argc, char *argv[] ) {
     fgets(buff, BUFFER_SIZE, stdin);
     stripNewLine(buff);
     write(server_socket, buff, BUFFER_SIZE);
+    read(server_socket, buff, BUFFER_SIZE); //welcome msg
+    printf("%s\n", buff);
 
     int max_sd = server_socket;
     fd_set read_fds;

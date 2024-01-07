@@ -65,7 +65,7 @@ int main(int argc, char *argv[] ) {
         if (FD_ISSET(listen_socket, &read_fds)) {
             //accept the connection
             int client_socket = server_tcp_handshake(listen_socket);
-            read(client_socket, buff, BUFFER_SIZE);
+            read(client_socket, buff, BUFFER_SIZE); //read for user
             struct player * p = create_player(buff, client_socket);
 
             // for (int x = 0; x < MAX_CLIENTS; x++){
@@ -84,7 +84,10 @@ int main(int argc, char *argv[] ) {
                     break; //to add once
                 }
             }
+            sprintf(buff, "Welcome to Word Bomb, %s!", p->name);
+            write(p->sd, buff, BUFFER_SIZE);
             printf("Connected, waiting for data.\n");
+
 
             //subserver_logic(client_socket);
             
