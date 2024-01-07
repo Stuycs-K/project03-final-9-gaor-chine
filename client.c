@@ -43,7 +43,8 @@ int main(int argc, char *argv[] ) {
         if (FD_ISSET(STDIN_FILENO, &read_fds)) {
             fgets(buff, BUFFER_SIZE, stdin);
             stripNewLine(buff);
-            write(server_socket, buff, BUFFER_SIZE);
+            int b = write(server_socket, buff, BUFFER_SIZE);
+            if (b==-1) err(46, "writing username failed\n");
             
         }
 

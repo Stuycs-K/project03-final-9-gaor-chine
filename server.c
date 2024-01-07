@@ -95,19 +95,23 @@ int main(int argc, char *argv[] ) {
         for (int x = 0; x < MAX_CLIENTS; x++){
 
             //int sd = clients[x];
-            int sd = players[x]->sd;
-            if (FD_ISSET(sd, &read_fds)){
+            int sd;
+            if (players[x] != NULL) { //player exists
+            
+                sd = players[x]->sd;
+                if (FD_ISSET(sd, &read_fds)){
 
-                //check if client exited
-                int bytes = read(sd, buff, BUFFER_SIZE);
-                if (bytes == -1) err(80, "check client exit failed\n");
-                if (bytes == 0){
-                    printf("client %d has disconnected.\n", x);
-                    // clients[x] = 0;
-                    players[x] = 0;
-                }
-                else{
-                    processing_logic(players[x], buff);
+                    //check if client exited
+                    int bytes = read(sd, buff, BUFFER_SIZE);
+                    if (bytes == -1) err(80, "check client exit failed\n");
+                    if (bytes == 0){
+                        printf("client %d has disconnected.\n", x);
+                        // clients[x] = 0;
+                        players[x] = 0;
+                    }
+                    else{
+                        processing_logic(players[x], buff);
+                    }
                 }
             }
 
