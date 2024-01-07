@@ -17,6 +17,12 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - server and clients can tell if each other have disconnected (server removes client from fds, client exits)
 - clients can write to server using stdin and server returns processed string
 
+### 2024-01-06 - Struct player and username
+- changed array of socket descriptors to array of struct player pointers and adjusted code accordingly
+- created a username input when client connects
+- server knows username of clients and associated socket descriptor through struct player array
+- added a welcome message with player name (will be expanded to include more information, ex. commands)
+- known bug that server will block/wait for usernames when multiple clients connect (may need forks)
 
 ## Edmund Chin
 
