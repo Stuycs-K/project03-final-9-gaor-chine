@@ -82,4 +82,19 @@ int parse(char word[]){
 //     // printf("returned: %d\n", i);
 // }
 
+void help(struct player *p){ //show all commands
+    char buff[100] = "help\n";
+    write(p->sd, buff, sizeof(buff));
+}
 
+void command_logic(struct player *p, char* line){
+    char * cmdargv[64];
+    char buff[100] = "command does not exist.\n";
+    parse_args(line, cmdargv);
+    if (strcmp(cmdargv[0], "/help")) help(p);
+    else write(p->sd, buff, sizeof(buff));
+}
+
+// void start_game(){ //starts the game
+
+// }

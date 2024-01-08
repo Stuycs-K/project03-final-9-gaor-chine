@@ -29,8 +29,8 @@ int main(int argc, char *argv[] ) {
     int listen_socket = server_setup();
     int max_sd = listen_socket; // max socket descriptor, will change as clients connect
     int MAX_CLIENTS = 10;
-    int clients[MAX_CLIENTS]; // store client socket file descriptors
-    for (int x = 0; x < MAX_CLIENTS; x++) clients[x] = 0; // initialize
+    //int clients[MAX_CLIENTS]; // store client socket file descriptors
+    //for (int x = 0; x < MAX_CLIENTS; x++) clients[x] = 0; // initialize
     
     struct player** players = calloc(MAX_CLIENTS, sizeof(struct player));
     
@@ -42,14 +42,7 @@ int main(int argc, char *argv[] ) {
         int cur_clients = 0;
         FD_ZERO(&read_fds);
         FD_SET(listen_socket,&read_fds);
-        // for (int x = 0; x < MAX_CLIENTS; x++){
-        //     if (clients[x] > 0){
-        //         FD_SET(clients[x], &read_fds); // add clients to fds
-        //         cur_clients += 1;
-        //     }
-        //     if (clients[x] > max_sd) max_sd = clients[x]; // update max socket descriptor
 
-        // }
         for (int x = 0; x < MAX_CLIENTS; x++){
             if (players[x] != NULL){
                 struct player* player = players[x];
@@ -68,14 +61,6 @@ int main(int argc, char *argv[] ) {
             read(client_socket, buff, BUFFER_SIZE); //read for user
             struct player * p = create_player(buff, client_socket);
 
-            // for (int x = 0; x < MAX_CLIENTS; x++){
-            //     //printf("%d\n", clients[x]);
-            //     if (clients[x] == 0){
-            //         clients[x] = client_socket;
-            //         printf("%d sd %d added to client list.\n", x, clients[x]);
-            //         break; //to add once
-            //     }
-            // }
             for (int x = 0; x < MAX_CLIENTS; x++){
                 //printf("%d\n", clients[x]);
                 if (players[x] == NULL){
@@ -113,7 +98,8 @@ int main(int argc, char *argv[] ) {
                         players[x] = 0;
                     }
                     else{
-                        processing_logic(players[x], buff);
+                        if(buff[0] == '/') command_logic(players[x], buff);
+                        else processing_logic(players[x], buff);
                     }
                 }
             }
