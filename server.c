@@ -16,7 +16,7 @@ void processing_logic(struct player* p, char* line){
     //printf("reading...\n");
     //int b = read(client_socket, line, BUFFER_SIZE);
     //if (b == -1) err(13, "server read broke");
-    printf("\nRecieved from client '%s'\n",line);
+    //printf("\nRecieved from client '%s'\n",line);
     //printf("processing...\n");
     rot13(line);
     //printf("writing...\n");
@@ -98,6 +98,7 @@ int main(int argc, char *argv[] ) {
                         players[x] = 0;
                     }
                     else{
+                        printf("\nRecieved from client '%s'\n",buff);
                         if(buff[0] == '/') command_logic(players[x], buff);
                         else processing_logic(players[x], buff);
                     }

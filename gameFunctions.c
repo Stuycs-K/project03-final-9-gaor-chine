@@ -83,7 +83,7 @@ int parse(char word[]){
 // }
 
 void help(struct player *p){ //show all commands
-    char buff[100] = "help\n";
+    char buff[100] = "help";
     write(p->sd, buff, sizeof(buff));
 }
 
@@ -91,7 +91,8 @@ void command_logic(struct player *p, char* line){
     char * cmdargv[64];
     char buff[100] = "command does not exist.\n";
     parse_args(line, cmdargv);
-    if (strcmp(cmdargv[0], "/help")) help(p);
+    //printf("%s\n", cmdargv[0]);
+    if (strcmp(cmdargv[0], "/help") == 0) help(p);
     else write(p->sd, buff, sizeof(buff));
 }
 
