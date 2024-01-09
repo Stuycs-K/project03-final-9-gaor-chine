@@ -44,3 +44,7 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 ### 2024-01-05 - piping grep
 - decided to implement pipe to obtain the output of grep
 - tried fixing bugs, still in process, ready to implement the last check for used words once bug is fixed
+
+### 2024-01-08 - redirection is not redirecting
+- tried to debug the interaction between grep and redirecting it into a text file
+- used last project as a base for the code but still redirects a unidentifiable string
