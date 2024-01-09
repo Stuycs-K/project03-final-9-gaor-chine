@@ -24,6 +24,11 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - added a welcome message with player name (will be expanded to include more information, ex. commands)
 - known bug that server will block/wait for usernames when multiple clients connect (may need forks)
 
+### 2024-01-08 - Commands and chat
+- server can distinguish commands vs chat (commands start with prefix '/')
+- server can send chat log to all clients
+- created /help to show all commands, noted on welcome message
+
 ## Edmund Chin
 
 ### 2024-01-02 - Found Partner
