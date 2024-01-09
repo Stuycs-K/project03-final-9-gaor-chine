@@ -56,23 +56,22 @@ int parse(char word[]){
         strcat(front,word);
         strcat(front,back);
         parse_args(front,cmdargv);
-        // dup2(fds[0],fds[1]);
-        fflush(stdin);
-        int file = open("checkFile.txt", O_CREAT|O_RDONLY);
-        int backup_stdout = dup(STDIN_FILENO);
-        // dup(STDOUT_FILENO);
-        dup2(file, STDIN_FILENO);
+        int file = open("checkFile.txt", O_CREAT|O_RDWR,666);
+        fflush(stdout);
+        int backup_stdout = dup(STDOUT_FILENO);
+        dup2(file, STDOUT_FILENO);
         close(file);
-
         execvp(cmdargv[0],cmdargv);
-        write("test.txt",file,999999999999999);
-        dup2(backup_stdout,STDIN_FILENO);
+        dup2(backup_stdout,STDOUT_FILENO);
         exit(0);
     }else{
         close(fds[WRITE]);
         char string[100];
         read(fds[READ],string,100);
         printf("output from stdout: %s\n",string);
+        int file = open("checkfile.txt",666);
+        read(file,string,100);
+        printf("read from file: %s\n",string);
     }
     return 0;
 }
