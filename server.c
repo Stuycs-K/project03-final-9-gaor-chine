@@ -1,5 +1,6 @@
 #include "networking.h"
 #include "gameFunctions.h"
+#define MAX_CLIENTS 10
 
 void rot13(char* line){
     for(int x = 0; x < strlen(line); x++){
@@ -11,24 +12,25 @@ void rot13(char* line){
     }
 }
 
-void processing_logic(struct player* p, char* line){
-    //char line[BUFFER_SIZE];
-    //printf("reading...\n");
-    //int b = read(client_socket, line, BUFFER_SIZE);
-    //if (b == -1) err(13, "server read broke");
-    //printf("\nRecieved from client '%s'\n",line);
-    //printf("processing...\n");
-    rot13(line);
+void chat_logic(struct player** ps, struct player* p, char* line){
+    //rot13(line);
+
     //printf("writing...\n");
-    int b = write(p->sd, line, BUFFER_SIZE);
-    if (b == -1) err(16, "server write broke");
+    //printf("%d", (int)(sizeof(ps)/sizeof(struct player)));
+    char buff[BUFFER_SIZE] = "";
+    for (int x = 0; x < MAX_CLIENTS; x++){
+        if(ps[x] != NULL){
+            sprintf(buff, "%s: %s", p->name, line);
+            int b = write(ps[x]->sd, buff, BUFFER_SIZE);
+            if (b == -1) err(16, "server write broke");
+        }
+    }
 }
 
 int main(int argc, char *argv[] ) { 
 
     int listen_socket = server_setup();
     int max_sd = listen_socket; // max socket descriptor, will change as clients connect
-    int MAX_CLIENTS = 10;
     //int clients[MAX_CLIENTS]; // store client socket file descriptors
     //for (int x = 0; x < MAX_CLIENTS; x++) clients[x] = 0; // initialize
     
@@ -58,7 +60,7 @@ int main(int argc, char *argv[] ) {
         if (FD_ISSET(listen_socket, &read_fds)) {
             //accept the connection
             int client_socket = server_tcp_handshake(listen_socket);
-            read(client_socket, buff, BUFFER_SIZE); //read for user
+            read(client_socket, buff, BUFFER_SIZE); //read for username
             struct player * p = create_player(buff, client_socket);
 
             for (int x = 0; x < MAX_CLIENTS; x++){
@@ -70,6 +72,8 @@ int main(int argc, char *argv[] ) {
                 }
             }
             sprintf(buff, "Welcome to Word Bomb, %s!", p->name);
+            write(p->sd, buff, BUFFER_SIZE);
+            sprintf(buff, "Type \"/help\" for all commands.");
             write(p->sd, buff, BUFFER_SIZE);
             printf("Connected, waiting for data.\n");
 
@@ -98,9 +102,9 @@ int main(int argc, char *argv[] ) {
                         players[x] = 0;
                     }
                     else{
-                        printf("\nRecieved from client '%s'\n",buff);
+                        printf("Recieved from client '%s'\n",buff);
                         if(buff[0] == '/') command_logic(players[x], buff);
-                        else processing_logic(players[x], buff);
+                        else chat_logic(players, players[x], buff);
                     }
                 }
             }

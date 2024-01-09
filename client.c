@@ -10,9 +10,9 @@ void clientLogic(int server_socket){
     int b = write(server_socket, line, BUFFER_SIZE);
     if (b == -1) err(6, "client write broke");
     //printf("reading...\n");
-    b = read(server_socket, line, BUFFER_SIZE);
-    if (b == -1) err(6, "client read broke");
-    printf("%s\n", line);
+    //b = read(server_socket, line, BUFFER_SIZE);
+    //if (b == -1) err(6, "client read broke");
+    //printf("%s\n", line);
 }
 
 int main(int argc, char *argv[] ) {
@@ -28,8 +28,8 @@ int main(int argc, char *argv[] ) {
     fgets(buff, BUFFER_SIZE, stdin);
     stripNewLine(buff);
     write(server_socket, buff, BUFFER_SIZE);
-    read(server_socket, buff, BUFFER_SIZE); //welcome msg
-    printf("%s\n", buff);
+    //read(server_socket, buff, BUFFER_SIZE); //welcome msg
+    //printf("%s\n", buff);
 
     int max_sd = server_socket;
     fd_set read_fds;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[] ) {
             fgets(buff, BUFFER_SIZE, stdin);
             stripNewLine(buff);
             int b = write(server_socket, buff, BUFFER_SIZE);
-            if (b==-1) err(46, "writing username failed\n");
+            if (b==-1) err(46, "writing stdin failed\n");
             
         }
 
