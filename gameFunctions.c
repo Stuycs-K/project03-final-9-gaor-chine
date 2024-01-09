@@ -44,33 +44,30 @@ returns 0 of word exists
 */
 int parse(char word[]){
     char * cmdargv[64];
-    int fds[2];
-    int pid = getpid();
-    pipe(fds);
     int f = fork();
     if(f == 0){
-        close(fds[READ]);
         char front[100] = "grep ";
         char back[] = " words_alpha.txt -w";
-        int usedWords = open("usedWords.txt" , O_CREAT|O_RDWR,644);
         strcat(front,word);
         strcat(front,back);
         parse_args(front,cmdargv);
-        int file = open("checkFile.txt", O_CREAT|O_RDWR,666);
+        int file = open("checkFile", O_CREAT|O_RDONLY|O_WRONLY|O_TRUNC);err(file,"line 55");
         fflush(stdout);
-        int backup_stdout = dup(STDOUT_FILENO);
-        dup2(file, STDOUT_FILENO);
+        int backup_stdout = dup(STDOUT_FILENO); err(backup_stdout,"line 57");
+        int a = dup2(file, STDOUT_FILENO); err(a,"line 58");
+        int b = close(file); err(b,"line 59");
+        int c = execvp(cmdargv[0],cmdargv);err(c,"line 60");
+        int d = dup2(backup_stdout,STDOUT_FILENO);err(d,"line 61");
         close(file);
-        execvp(cmdargv[0],cmdargv);
-        dup2(backup_stdout,STDOUT_FILENO);
         exit(0);
     }else{
-        close(fds[WRITE]);
         char string[100];
-        read(fds[READ],string,100);
-        printf("output from stdout: %s\n",string);
-        int file = open("checkfile.txt",666);
-        read(file,string,100);
+        int status;
+        wait(&status);
+        int file = open("checkfile",O_RDONLY);err(file,"line 65");
+        // int usedWords = open("usedWords", O_CREAT|O_RDONLY|O_WRONLY); err(usedWords,"line 51");
+        // close(usedWords);
+        int s = read(file,string,100); err(s,"line 68");
         printf("read from file: %s\n",string);
     }
     return 0;
@@ -81,8 +78,12 @@ int main(int argc, char * argv[]){
     printf("Tests:\n");
     char c[] = "yes";
     int i;
+    char string[100];
     i = parse(c);
     // printf("returned: %d\n", i);
+    // int f = open("test.txt",O_RDONLY);
+    // read(f,string,100);
+    // printf("test: %s\n",string);
 }
 
 

@@ -6,5 +6,7 @@ run: runme
 clean: 
 	@rm -rf gameFunctions.o
 	@rm -rf runme
+	@rm -rf usedWords
+	@rm -rf checkFile 
 gameFuctions.o:gameFunctions.c
 	@gcc gameFunctions.c -c
