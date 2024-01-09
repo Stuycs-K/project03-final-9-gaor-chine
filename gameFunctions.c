@@ -89,15 +89,17 @@ void help(struct player *p){ //show all commands
     write(p->sd, buff, BUFFER_SIZE);
 }
 
-void command_logic(struct player *p, char* line){
+void start_game(struct player **ps){ //starts the game
+    char buff[BUFFER_SIZE] = "Game is starting.\n";
+    write_all(ps, buff);
+}
+
+void command_logic(struct player **ps; struct player *p, char* line){
     char * cmdargv[64];
     char buff[100] = "command does not exist.";
     parse_args(line, cmdargv);
     //printf("%s\n", cmdargv[0]);
     if (strcmp(cmdargv[0], "/help") == 0) help(p);
+    if (strcmp(cmdargv[0], "/start") == 0) start_game(ps);
     else write(p->sd, buff, sizeof(buff));
 }
-
-// void start_game(){ //starts the game
-
-// }

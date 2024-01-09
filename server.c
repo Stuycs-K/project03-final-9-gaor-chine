@@ -27,6 +27,15 @@ void chat_logic(struct player** ps, struct player* p, char* line){
     }
 }
 
+void write_all(struct player** ps, char * buff){
+    for (int x = 0; x < MAX_CLIENTS; x++){
+        if(ps[x] != NULL){
+            int b = write(ps[x]->sd, buff, sizeof(buff));
+            if (b == -1) err(16, "server write broke");
+        }
+    }
+}
+
 int main(int argc, char *argv[] ) { 
 
     int listen_socket = server_setup();
@@ -103,7 +112,7 @@ int main(int argc, char *argv[] ) {
                     }
                     else{
                         printf("Recieved from client '%s'\n",buff);
-                        if(buff[0] == '/') command_logic(players[x], buff);
+                        if(buff[0] == '/') command_logic(players, players[x], buff);
                         else chat_logic(players, players[x], buff);
                     }
                 }
