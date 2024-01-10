@@ -72,6 +72,16 @@ int parse(char word[]){
     printf("returned val: %s\n", grepReturn);
     return 0;
 }
+
+void write_all(struct player** ps, char * buff){
+    for (int x = 0; x < MAX_CLIENTS; x++){
+        if(ps[x] != NULL){
+            int b = write(ps[x]->sd, buff, BUFFER_SIZE);
+            if (b == -1) err(16, "server write broke");
+        }
+    }
+}
+
 //---------------------------------------------------------------------------------------------
 // int main(int argc, char * argv[]){
     
@@ -89,17 +99,34 @@ void help(struct player *p){ //show all commands
     write(p->sd, buff, BUFFER_SIZE);
 }
 
-void start_game(struct player **ps){ //starts the game
-    char buff[BUFFER_SIZE] = "Game is starting.\n";
-    write_all(ps, buff);
+void start_game(struct player **ps, int* game_status){ //starts the game
+    *game_status = 1; //change to true
+    int f = fork();
+    if (f==0){
+        char buff[BUFFER_SIZE] = "Game is starting.";
+        write_all(ps, buff);
+        for (int x = 0; x < 5; x++){
+            sleep(1);
+        }
+        sprintf(buff, "Game has ended.");
+        write_all(ps, buff);
+    }
+    *game_status = 0; //change to false
 }
 
-void command_logic(struct player **ps; struct player *p, char* line){
+void command_logic(struct player **ps, struct player *p, char* line, int* game_status){
+    printf("%d\n", *game_status);
     char * cmdargv[64];
     char buff[100] = "command does not exist.";
     parse_args(line, cmdargv);
     //printf("%s\n", cmdargv[0]);
     if (strcmp(cmdargv[0], "/help") == 0) help(p);
-    if (strcmp(cmdargv[0], "/start") == 0) start_game(ps);
+    else if (strcmp(cmdargv[0], "/start") == 0){
+        if(*game_status == 1){
+            sprintf(buff, "Game is in progress.");
+            write(p->sd, buff, sizeof(buff));
+        }
+        else start_game(ps, game_status);
+    }
     else write(p->sd, buff, sizeof(buff));
 }

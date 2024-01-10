@@ -1,6 +1,5 @@
 #include "networking.h"
 #include "gameFunctions.h"
-#define MAX_CLIENTS 10
 
 void rot13(char* line){
     for(int x = 0; x < strlen(line); x++){
@@ -27,15 +26,6 @@ void chat_logic(struct player** ps, struct player* p, char* line){
     }
 }
 
-void write_all(struct player** ps, char * buff){
-    for (int x = 0; x < MAX_CLIENTS; x++){
-        if(ps[x] != NULL){
-            int b = write(ps[x]->sd, buff, sizeof(buff));
-            if (b == -1) err(16, "server write broke");
-        }
-    }
-}
-
 int main(int argc, char *argv[] ) { 
 
     int listen_socket = server_setup();
@@ -47,6 +37,8 @@ int main(int argc, char *argv[] ) {
     
     fd_set read_fds;
     char buff[BUFFER_SIZE]="";
+
+    int game_status = 0;
 
     while (1){
         
@@ -112,7 +104,7 @@ int main(int argc, char *argv[] ) {
                     }
                     else{
                         printf("Recieved from client '%s'\n",buff);
-                        if(buff[0] == '/') command_logic(players, players[x], buff);
+                        if(buff[0] == '/') command_logic(players, players[x], buff, &game_status);
                         else chat_logic(players, players[x], buff);
                     }
                 }
