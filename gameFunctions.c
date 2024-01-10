@@ -111,7 +111,12 @@ void start_game(struct player **ps, int* game_status){ //starts the game
         sprintf(buff, "Game has ended.");
         write_all(ps, buff);
     }
-    *game_status = 0; //change to false
+    else{
+        int status;
+        wait(&status);
+        *game_status = 0; //change to false
+    }
+    
 }
 
 void command_logic(struct player **ps, struct player *p, char* line, int* game_status){
