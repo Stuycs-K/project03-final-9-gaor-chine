@@ -51,7 +51,8 @@ int parse(char word[]){
         strcat(front,word);
         strcat(front,back);
         parse_args(front,cmdargv);
-        int file = open("checkFile", O_CREAT|O_RDONLY|O_WRONLY|O_TRUNC);err(file,"line 55");
+        int ff = open("checkFile", O_CREAT,0666);
+        int file = open("checkFile",O_RDONLY|O_WRONLY|O_TRUNC,0666);err(file,"line 55");
         fflush(stdout);
         int backup_stdout = dup(STDOUT_FILENO); err(backup_stdout,"line 57");
         int a = dup2(file, STDOUT_FILENO); err(a,"line 58");
@@ -64,7 +65,8 @@ int parse(char word[]){
         char string[100];
         int status;
         wait(&status);
-        int file = open("checkfile",O_RDONLY);err(file,"line 65");
+        // sleep(1);
+        int file = open("checkFile",O_RDONLY,666);err(file,"line 65");
         // int usedWords = open("usedWords", O_CREAT|O_RDONLY|O_WRONLY); err(usedWords,"line 51");
         // close(usedWords);
         int s = read(file,string,100); err(s,"line 68");
