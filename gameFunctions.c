@@ -91,4 +91,46 @@ int parse(char word[]){
 //     // printf("test: %s\n",string);
 // }
 
+void help(struct player *p){ //show all commands
+    char buff[BUFFER_SIZE] = "|| Commands:\n";
+    strcat(buff, "|| /help : show all commands\n");
+    strcat(buff, "|| /start : start the Word Bomb game");
+    write(p->sd, buff, BUFFER_SIZE);
+}
+
+void start_game(struct player **ps, int* game_status){ //starts the game
+    *game_status = 1; //change to true
+    int f = fork();
+    if (f==0){ //child
+        char buff[BUFFER_SIZE] = "Game is starting.";
+        write_all(ps, buff);
+        for (int x = 0; x < 5; x++){
+            sleep(1);
+        }
+        sprintf(buff, "Game has ended.");
+        write_all(ps, buff);
+    }
+    // else{
+    //     int status;
+    //     wait(&status);
+    // }
+    *game_status = 0; //change to false
+}
+
+void command_logic(struct player **ps, struct player *p, char* line, int* game_status){
+    printf("%d\n", *game_status);
+    char * cmdargv[64];
+    char buff[100] = "command does not exist.";
+    parse_args(line, cmdargv);
+    //printf("%s\n", cmdargv[0]);
+    if (strcmp(cmdargv[0], "/help") == 0) help(p);
+    else if (strcmp(cmdargv[0], "/start") == 0){
+        if(*game_status == 1){
+            sprintf(buff, "Game is in progress.");
+            write(p->sd, buff, sizeof(buff));
+        }
+        else start_game(ps, game_status);
+    }
+    else write(p->sd, buff, sizeof(buff));
+}
 
