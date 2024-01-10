@@ -3,7 +3,7 @@ default:
 compile: client.o server.o networking.o gameFunctions.o
 	@gcc -o client client.o networking.o gameFunctions.o
 	@gcc -o server server.o networking.o gameFunctions.o
-#	@gcc -o runme gameFunctions.o networking.o
+	@gcc -o runme gameFunctions.o networking.o
 
 client: compile
 	@./client $(ARGS)
