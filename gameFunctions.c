@@ -65,29 +65,30 @@ int parse(char word[]){
         char string[100];
         int status;
         wait(&status);
-        // sleep(1);
-        FILE * file = fopen("checkFile","r");//err(file,"line 65");
-        // int file = open("checkFile",O_RDONLY,0644);//err(file,"line 65");
+        int file = open("checkFile",O_RDONLY,0644);//err(file,"line 65");
+        int s = read(file,string,100); err(s,"line 68");
+        printf("read from file: %s\n",string);
+        // printf("the string is: %s\n",string);
+        // FILE * file = fopen("checkFile","r");//err(file,"line 65");
         // int usedWords = open("usedWords", O_CREAT|O_RDONLY|O_WRONLY); err(usedWords,"line 51");
         // close(usedWords);
-        // int s = read(file,string,100); err(s,"line 68");
         // fgets(string,100,file);
-        printf("read from file: %s\n",string);
+        // printf("read from file: %s\n",string);
     }
     return 0;
 }
 //---------------------------------------------------------------------------------------------
-int main(int argc, char * argv[]){
+// int main(int argc, char * argv[]){
     
-    printf("Tests:\n");
-    char c[] = "yes";
-    int i;
-    char string[100];
-    i = parse(c);
-    // printf("returned: %d\n", i);
-    // int f = open("test.txt",O_RDONLY);
-    // read(f,string,100);
-    // printf("test: %s\n",string);
-}
+//     printf("Tests:\n");
+//     char c[] = "yes";
+//     int i;
+//     char string[100];
+//     i = parse(c);
+//     // printf("returned: %d\n", i);
+//     // int f = open("test.txt",O_RDONLY);
+//     // read(f,string,100);
+//     // printf("test: %s\n",string);
+// }
 
 
