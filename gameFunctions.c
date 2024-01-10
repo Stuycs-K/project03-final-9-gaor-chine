@@ -102,7 +102,7 @@ void help(struct player *p){ //show all commands
 void start_game(struct player **ps, int* game_status){ //starts the game
     *game_status = 1; //change to true
     int f = fork();
-    if (f==0){
+    if (f==0){ //child
         char buff[BUFFER_SIZE] = "Game is starting.";
         write_all(ps, buff);
         for (int x = 0; x < 5; x++){
@@ -111,11 +111,11 @@ void start_game(struct player **ps, int* game_status){ //starts the game
         sprintf(buff, "Game has ended.");
         write_all(ps, buff);
     }
-    else{
-        int status;
-        wait(&status);
-        *game_status = 0; //change to false
-    }
+    // else{
+    //     int status;
+    //     wait(&status);
+    // }
+    *game_status = 0; //change to false
     
 }
 
