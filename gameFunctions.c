@@ -66,10 +66,12 @@ int parse(char word[]){
         int status;
         wait(&status);
         // sleep(1);
-        int file = open("checkFile",O_RDONLY,666);err(file,"line 65");
+        FILE * file = fopen("checkFile","r");//err(file,"line 65");
+        // int file = open("checkFile",O_RDONLY,0644);//err(file,"line 65");
         // int usedWords = open("usedWords", O_CREAT|O_RDONLY|O_WRONLY); err(usedWords,"line 51");
         // close(usedWords);
-        int s = read(file,string,100); err(s,"line 68");
+        // int s = read(file,string,100); err(s,"line 68");
+        // fgets(string,100,file);
         printf("read from file: %s\n",string);
     }
     return 0;
