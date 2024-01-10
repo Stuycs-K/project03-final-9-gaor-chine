@@ -10,9 +10,9 @@ void clientLogic(int server_socket){
     int b = write(server_socket, line, BUFFER_SIZE);
     if (b == -1) err(6, "client write broke");
     //printf("reading...\n");
-    b = read(server_socket, line, BUFFER_SIZE);
-    if (b == -1) err(6, "client read broke");
-    printf("%s\n", line);
+    //b = read(server_socket, line, BUFFER_SIZE);
+    //if (b == -1) err(6, "client read broke");
+    //printf("%s\n", line);
 }
 
 int main(int argc, char *argv[] ) {
@@ -22,9 +22,17 @@ int main(int argc, char *argv[] ) {
     }
     int server_socket = client_tcp_handshake(IP);
     printf("client connected.\n");
+    
+    printf("Enter your username: ");
+    char buff[BUFFER_SIZE] = "";
+    fgets(buff, BUFFER_SIZE, stdin);
+    stripNewLine(buff);
+    write(server_socket, buff, BUFFER_SIZE);
+    //read(server_socket, buff, BUFFER_SIZE); //welcome msg
+    //printf("%s\n", buff);
+
     int max_sd = server_socket;
     fd_set read_fds;
-    char buff[BUFFER_SIZE] = "";
 
     while(1){
 
@@ -37,7 +45,8 @@ int main(int argc, char *argv[] ) {
         if (FD_ISSET(STDIN_FILENO, &read_fds)) {
             fgets(buff, BUFFER_SIZE, stdin);
             stripNewLine(buff);
-            write(server_socket, buff, BUFFER_SIZE);
+            int b = write(server_socket, buff, BUFFER_SIZE);
+            if (b==-1) err(46, "writing stdin failed\n");
             
         }
 

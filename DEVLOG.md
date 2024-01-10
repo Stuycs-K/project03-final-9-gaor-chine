@@ -17,6 +17,22 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - server and clients can tell if each other have disconnected (server removes client from fds, client exits)
 - clients can write to server using stdin and server returns processed string
 
+### 2024-01-06 - Struct player and username
+- changed array of socket descriptors to array of struct player pointers and adjusted code accordingly
+- created a username input when client connects
+- server knows username of clients and associated socket descriptor through struct player array
+- added a welcome message with player name (will be expanded to include more information, ex. commands)
+- known bug that server will block/wait for usernames when multiple clients connect (may need forks)
+
+### 2024-01-08 - Commands and chat
+- server can distinguish commands vs chat (commands start with prefix '/')
+- server can send chat log to all clients
+- created /help to show all commands, noted on welcome message
+
+### 2024-01-09 - Start command
+- discovered bug where clients chatting will interrupt viewing of other clients (create breaks)
+- added game_status to track progress of game, changes behavior of functions
+- tried to make start unavailable after game is in progress but parent program stalls and blocks commands
 
 ## Edmund Chin
 
@@ -29,3 +45,11 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - imported old exec lab code
 - created a parse command to exec grep to search for a specific word in a file rather than a long while loop, will add more checks to make sure the entered word follows all rules
 - learned about grep and its flags
+
+### 2024-01-05 - piping grep
+- decided to implement pipe to obtain the output of grep
+- tried fixing bugs, still in process, ready to implement the last check for used words once bug is fixed
+
+### 2024-01-08 - redirection is not redirecting
+- tried to debug the interaction between grep and redirecting it into a text file
+- used last project as a base for the code but still redirects a unidentifiable string

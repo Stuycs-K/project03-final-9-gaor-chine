@@ -31,7 +31,7 @@ void parse_args(char * line, char * args[]){
     char * linePointer = line;
     char * holder;
     int counter = 0;
-    while(holder = strsep(&linePointer, " ")){
+    while(holder == strsep(&linePointer, " ")){
         args[counter] = holder;
         counter ++;
     }
