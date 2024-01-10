@@ -29,6 +29,11 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - server can send chat log to all clients
 - created /help to show all commands, noted on welcome message
 
+### 2024-01-09 - Start command
+- discovered bug where clients chatting will interrupt viewing of other clients (create breaks)
+- added game_status to track progress of game, changes behavior of functions
+- tried to make start unavailable after game is in progress but parent program stalls and blocks commands
+
 ## Edmund Chin
 
 ### 2024-01-02 - Found Partner
