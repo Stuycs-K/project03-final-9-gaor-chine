@@ -34,11 +34,17 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - added game_status to track progress of game, changes behavior of functions
 - tried to make start unavailable after game is in progress but parent program stalls and blocks commands
 
-### 2024-01-09 - Timeout with select, added prompts
+### 2024-01-10 - Timeout with select, added prompts
 - created skeleton/beginnings of timer system using select timeout argument
 - game status changes between select timer and regular timer
 - created game end condition (1 client connected while game is in progress)
 - compiled 2/3 letter prompts to prompts.txt for later use
+
+### 2024-01-11 - Timer and testing early gameplay
+- used timeout function of select to track while game is in progress
+- created current player and a next player function to switch timeout effects
+- created preliminary word checker for correct/incorrectness and effects
+- bug where the timer is not reset when game starts (timer afterwards works as intended though)
 
 ## Edmund Chin
 
