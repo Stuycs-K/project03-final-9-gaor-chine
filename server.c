@@ -36,6 +36,7 @@ int main(int argc, char *argv[] ) {
     struct player** players = calloc(MAX_CLIENTS, sizeof(struct player));
     
     fd_set read_fds;
+    fd_set cur_player_only;
     char buff[BUFFER_SIZE]="";
 
     struct timeval timeout;
@@ -43,10 +44,12 @@ int main(int argc, char *argv[] ) {
     timeout.tv_usec = 0;
 
     int game_status = 0;
+    int cur_player_index = 0;
 
     while (1){
         
         FD_ZERO(&read_fds);
+        FD_ZERO(&cur_player_only);
         FD_SET(listen_socket,&read_fds);
 
         for (int x = 0; x < MAX_CLIENTS; x++){
@@ -60,22 +63,33 @@ int main(int argc, char *argv[] ) {
         printf("%d clients connected.\n", cur_clients);
 
         int i;
-        if (game_status == 1) {
-            i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
+        if (game_status == 1) { //game logic
+            struct player *player_turn = players[cur_player_index];
+            FD_SET(player_turn->sd,&cur_player_only);
+            sprintf(buff, "It is your turn now.");
+            write(player_turn->sd, buff, BUFFER_SIZE);
+
+            i = select(player_turn->sd, &cur_player_only, NULL, NULL, &timeout); //listen to current player
+
             if (cur_clients == 1){ //end game
                 game_status = 0;
                 write_all(players, "Game is ending.");
             }
-            else if (i == 0){ //timed out, reset timer
-                write_all(players, "timed out");
+            else if (i == 0){ //timed out, reset timer, switch player
+                write_all(players, "timed out, lose a life");
                 timeout.tv_sec = 10;
                 timeout.tv_usec = 0;
+                cur_player_index = next_player_index(cur_player_index, players);
             }
-            else { //wrong answer/from different client, then do not reset
-                
+            else { //wrong answer, then do not reset
+                sprintf(buff, "not a valid answer");
+                write(player_turn->sd, buff, BUFFER_SIZE);
             }
+
         }
-        else i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
+
+        
+        i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
 
         // if listen_socket, accept connection and add to client sockets array
         if (FD_ISSET(listen_socket, &read_fds)) {

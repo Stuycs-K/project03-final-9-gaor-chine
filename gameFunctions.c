@@ -107,6 +107,16 @@ int cur_players(struct player **ps){
     return cur_clients;
 }
 
+int next_player_index(int cur_player_index, struct player **ps){
+    for (int x = cur_player_index + 1; x < MAX_CLIENTS; x++){
+        if (ps[x] != NULL) return x;
+    }
+    for (int x = 0; x < cur_player_index; x++){ //loop back around
+        if (ps[x] != NULL) return x;
+    }
+}
+
+
 void write_all(struct player** ps, char * buff){
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL){
@@ -126,21 +136,9 @@ void help(struct player *p){ //show all commands
 
 void start_game(struct player **ps, int* game_status){ //starts the game
     *game_status = 1; //change to true
-    // int f = fork();
-    // if (f==0){ //child
-    //     char buff[BUFFER_SIZE] = "Game is starting.";
-    //     write_all(ps, buff);
-    //     for (int x = 0; x < 5; x++){
-    //         sleep(1);
-    //     }
-    //     sprintf(buff, "Game has ended.");
-    //     write_all(ps, buff);
-    // }
-    // // else{
-    // //     int status;
-    //     wait(&status);
-    // }
-    // *game_status = 0; //change to false
+    char buff[BUFFER_SIZE] = "Game is starting.";
+    write_all(ps, buff);
+    
 }
 
 void command_logic(struct player **ps, struct player *p, char* line, int* game_status){
