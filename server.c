@@ -38,6 +38,10 @@ int main(int argc, char *argv[] ) {
     fd_set read_fds;
     char buff[BUFFER_SIZE]="";
 
+    struct timeval timeout;
+    timeout.tv_sec = 10;
+    timeout.tv_usec = 0;
+
     int game_status = 0;
 
     while (1){
@@ -54,7 +58,24 @@ int main(int argc, char *argv[] ) {
         }
         int cur_clients = cur_players(players);
         printf("%d clients connected.\n", cur_clients);
-        int i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
+
+        int i;
+        if (game_status == 1) {
+            i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
+            if (cur_clients == 1){ //end game
+                game_status = 0;
+                write_all(players, "Game is ending.");
+            }
+            else if (i == 0){ //timed out, reset timer
+                write_all(players, "timed out");
+                timeout.tv_sec = 10;
+                timeout.tv_usec = 0;
+            }
+            else { //wrong answer/from different client, then do not reset
+                
+            }
+        }
+        else i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
 
         // if listen_socket, accept connection and add to client sockets array
         if (FD_ISSET(listen_socket, &read_fds)) {
