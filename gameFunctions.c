@@ -138,11 +138,10 @@ void start_game(struct player **ps, int* game_status){ //starts the game
     *game_status = 1; //change to true
     char buff[BUFFER_SIZE] = "Game is starting.";
     write_all(ps, buff);
-    
 }
 
 void command_logic(struct player **ps, struct player *p, char* line, int* game_status){
-    printf("%d\n", *game_status);
+    printf("game_status: %d\n", *game_status);
     char * cmdargv[64];
     char buff[100] = "command does not exist.";
     parse_args(line, cmdargv);

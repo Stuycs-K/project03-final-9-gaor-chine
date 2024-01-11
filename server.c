@@ -43,13 +43,13 @@ int main(int argc, char *argv[] ) {
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
 
-    int game_status = 0;
+    int temp_game_status = 0;
     int cur_player_index = 0;
 
     while (1){
         
         FD_ZERO(&read_fds);
-        FD_ZERO(&cur_player_only);
+        //FD_ZERO(&cur_player_only);
         FD_SET(listen_socket,&read_fds);
 
         for (int x = 0; x < MAX_CLIENTS; x++){
@@ -61,37 +61,27 @@ int main(int argc, char *argv[] ) {
         }
         int cur_clients = cur_players(players);
         printf("%d clients connected.\n", cur_clients);
+        struct player *player_turn = players[cur_player_index];
 
-        int i;
+        int game_status = temp_game_status; // ONLY UPDATES HERE to start logic from beginning
         if (game_status == 1) { //game logic
-            struct player *player_turn = players[cur_player_index];
-            FD_SET(player_turn->sd,&cur_player_only);
-            sprintf(buff, "It is your turn now.");
-            write(player_turn->sd, buff, BUFFER_SIZE);
-
-            i = select(player_turn->sd, &cur_player_only, NULL, NULL, &timeout); //listen to current player
-
-            if (cur_clients == 1){ //end game
+            if (cur_clients == 1){ //check for end game condition
                 game_status = 0;
                 write_all(players, "Game is ending.");
             }
-            else if (i == 0){ //timed out, reset timer, switch player
-                sprintf(buff, "%s timed out, lose a life", player_turn->name);
-                write_all(players, buff);
-                timeout.tv_sec = 10;
-                timeout.tv_usec = 0;
-                cur_player_index = next_player_index(cur_player_index, players);
-            }
-            else { //wrong answer, then do not reset
-                sprintf(buff, "not a valid answer");
-                write(player_turn->sd, buff, BUFFER_SIZE);
-            }
 
+            player_turn = players[cur_player_index];
+            sprintf(buff, "It is your turn now.");
+            write(player_turn->sd, buff, BUFFER_SIZE);
         }
 
-
-        i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
+        int i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
         if (i == 0) {
+            if (game_status == 1){
+                sprintf(buff, "%s timed out, lose a life", player_turn->name);
+                write_all(players, buff);
+                cur_player_index = next_player_index(cur_player_index, players);
+            }
             timeout.tv_sec = 10;
             timeout.tv_usec = 0;
         }
@@ -143,8 +133,22 @@ int main(int argc, char *argv[] ) {
                     }
                     else{
                         printf("Recieved from client '%s'\n",buff);
-                        if(buff[0] == '/') command_logic(players, players[x], buff, &game_status);
-                        else chat_logic(players, players[x], buff);
+                        //prioritize commands, to game inputs, to chat
+                        if(buff[0] == '/') command_logic(players, players[x], buff, &temp_game_status);
+                        else if (game_status == 1) {
+                            if (sd == player_turn->sd){ //if input is from current player's turn
+                                // PUT CHECKS IN HERE FOR WORDS & STUFF
+                                if (strcmp(buff, "correct") == 0){
+                                    write_all(players, "thats right!");
+                                    cur_player_index = next_player_index(cur_player_index, players);
+                                }else{
+                                    char reply[BUFFER_SIZE] = "";
+                                    sprintf(reply, "thats wrong, try again!");
+                                    write(player_turn->sd, buff, BUFFER_SIZE);
+                                }
+                            }
+                        }
+                        chat_logic(players, players[x], buff);
                     }
                 }
             }
