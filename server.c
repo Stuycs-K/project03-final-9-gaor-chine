@@ -76,7 +76,8 @@ int main(int argc, char *argv[] ) {
                 write_all(players, "Game is ending.");
             }
             else if (i == 0){ //timed out, reset timer, switch player
-                write_all(players, "timed out, lose a life");
+                sprintf(buff, "%s timed out, lose a life", player_turn->name);
+                write_all(players, buff);
                 timeout.tv_sec = 10;
                 timeout.tv_usec = 0;
                 cur_player_index = next_player_index(cur_player_index, players);
@@ -88,8 +89,12 @@ int main(int argc, char *argv[] ) {
 
         }
 
-        
-        i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
+
+        i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
+        if (i == 0) {
+            timeout.tv_sec = 10;
+            timeout.tv_usec = 0;
+        }
 
         // if listen_socket, accept connection and add to client sockets array
         if (FD_ISSET(listen_socket, &read_fds)) {
