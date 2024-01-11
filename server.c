@@ -42,7 +42,6 @@ int main(int argc, char *argv[] ) {
 
     while (1){
         
-        int cur_clients = 0;
         FD_ZERO(&read_fds);
         FD_SET(listen_socket,&read_fds);
 
@@ -50,10 +49,10 @@ int main(int argc, char *argv[] ) {
             if (players[x] != NULL){
                 struct player* player = players[x];
                 FD_SET(player->sd, &read_fds); // add clients to fds
-                cur_clients += 1;
                 if (player->sd > max_sd) max_sd = player->sd; // update max socket descriptor
             }
         }
+        int cur_clients = cur_players(players);
         printf("%d clients connected.\n", cur_clients);
         int i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
 

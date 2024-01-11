@@ -4,6 +4,7 @@ struct player{char name[100];int lives;int sd;};
 struct player* create_player(char *name, int sd);
 void parse_args(char * line, char * args[]);
 int parse(char word[]);
+int cur_players(struct player** ps);
 void write_all(struct player** ps, char * buff);
 void command_logic(struct player **ps, struct player *p, char* line, int* gs_pointer);
 void help(struct player *p);

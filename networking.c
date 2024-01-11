@@ -1,4 +1,5 @@
 #include "networking.h"
+#include "gameFunctions.h"
 //ip: 149.89.161.100
 
 /*Connect to the server

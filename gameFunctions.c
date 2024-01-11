@@ -12,26 +12,34 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include "networking.h"
+#include "gameFunctions.h"
 
 #define BUFFERSIZE 100
 #define READ 0
 #define WRITE 1
 // #define WRITE 1
 
-struct player{char name[BUFFERSIZE];int lives;};
+// void err(int i, char*message){
+//   if(i < 0){
+// 	  printf("Error: %s - %s\n",message, strerror(errno));
+//   	exit(1);
+//   }
+// }
 
-void err(int i, char*message){
-  if(i < 0){
-	  printf("Error: %s - %s\n",message, strerror(errno));
-  	exit(1);
-  }
+struct player* create_player(char *name, int sd){
+    struct player *p = malloc(sizeof(struct player));
+    strcpy(p->name, name);
+    p->lives = 2;
+    p->sd = sd;
+    return p;
 }
 
 void parse_args(char * line, char * args[]){
     char * linePointer = line;
     char * holder;
     int counter = 0;
-    while(holder == strsep(&linePointer, " ")){
+    while(holder = strsep(&linePointer, " ")){
         args[counter] = holder;
         counter ++;
     }
@@ -91,10 +99,28 @@ int parse(char word[]){
 //     // printf("test: %s\n",string);
 // }
 
+int cur_players(struct player **ps){
+    int cur_clients = 0;
+    for (int x = 0; x < MAX_CLIENTS; x++){
+        if (ps[x] != NULL) cur_clients++;
+    }
+    return cur_clients;
+}
+
+void write_all(struct player** ps, char * buff){
+    for (int x = 0; x < MAX_CLIENTS; x++){
+        if(ps[x] != NULL){
+            int b = write(ps[x]->sd, buff, BUFFER_SIZE);
+            if (b == -1) err(16, "server write broke");
+        }
+    }
+}
+
 void help(struct player *p){ //show all commands
     char buff[BUFFER_SIZE] = "|| Commands:\n";
     strcat(buff, "|| /help : show all commands\n");
     strcat(buff, "|| /start : start the Word Bomb game");
+    printf("%s", buff);
     write(p->sd, buff, BUFFER_SIZE);
 }
 
@@ -122,11 +148,16 @@ void command_logic(struct player **ps, struct player *p, char* line, int* game_s
     char * cmdargv[64];
     char buff[100] = "command does not exist.";
     parse_args(line, cmdargv);
-    //printf("%s\n", cmdargv[0]);
+    printf("bro this is not working\n");
+    printf("%s\n", cmdargv[0]);
     if (strcmp(cmdargv[0], "/help") == 0) help(p);
     else if (strcmp(cmdargv[0], "/start") == 0){
         if(*game_status == 1){
             sprintf(buff, "Game is in progress.");
+            write(p->sd, buff, sizeof(buff));
+        }
+        else if (cur_players(ps) < 2){
+            sprintf(buff, "Game requires at least 2 players. Current number of players: %d", cur_players(ps));
             write(p->sd, buff, sizeof(buff));
         }
         else start_game(ps, game_status);
