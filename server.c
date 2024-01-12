@@ -44,6 +44,7 @@ int main(int argc, char *argv[] ) {
     timeout.tv_usec = 0;
 
     int temp_game_status = 0;
+    int game_status = 0;
     int cur_player_index = 0;
 
     while (1){
@@ -63,10 +64,14 @@ int main(int argc, char *argv[] ) {
         printf("%d clients connected.\n", cur_clients);
         struct player *player_turn = players[cur_player_index];
 
-        int game_status = temp_game_status; // ONLY UPDATES HERE to start logic from beginning
+        if (game_status == 0 && temp_game_status == 1){ //game just started, reset the timeout
+            timeout.tv_sec = 10;
+            timeout.tv_usec = 0;
+        }
+        game_status = temp_game_status; // ONLY UPDATES HERE to start logic from beginning
         if (game_status == 1) { //game logic
             if (cur_clients == 1){ //check for end game condition
-                game_status = 0;
+                temp_game_status = 0;
                 write_all(players, "Game is ending.");
             }
 
@@ -130,6 +135,11 @@ int main(int argc, char *argv[] ) {
                         printf("client %d has disconnected.\n", x);
                         // clients[x] = 0;
                         players[x] = 0;
+                        if (game_status == 1){
+                            cur_player_index = next_player_index(cur_player_index, players);
+                            timeout.tv_sec = 10;
+                            timeout.tv_usec = 0;
+                        }
                     }
                     else{
                         printf("Recieved from client '%s'\n",buff);
@@ -141,14 +151,17 @@ int main(int argc, char *argv[] ) {
                                 if (strcmp(buff, "correct") == 0){
                                     write_all(players, "thats right!");
                                     cur_player_index = next_player_index(cur_player_index, players);
+                                    timeout.tv_sec = 10;
+                                    timeout.tv_usec = 0;
                                 }else{
                                     char reply[BUFFER_SIZE] = "";
                                     sprintf(reply, "thats wrong, try again!");
                                     write(player_turn->sd, buff, BUFFER_SIZE);
                                 }
                             }
+                            chat_logic(players, players[x], buff);
                         }
-                        chat_logic(players, players[x], buff);
+                        else chat_logic(players, players[x], buff);
                     }
                 }
             }
