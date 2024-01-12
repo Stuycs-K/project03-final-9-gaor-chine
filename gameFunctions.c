@@ -47,7 +47,8 @@ void parse_args(char * line, char * args[]){
 }
 /*
 parses words_alpha.txt for the inputed word
-returns 1 if word doesn't exist and abides by the rules;
+returns 2 if word does not exist
+returns 1 if word exists but is used
 returns 0 of word exists
 */
 int parse(char word[]){
@@ -64,13 +65,14 @@ int parse(char word[]){
         strcat(front,back);
         parse_args(front,cmdargv);
         int ff = open("checkFile", O_CREAT,0666);
-        int file = open("checkFile",O_RDONLY|O_WRONLY|O_TRUNC,0666);//err(file,"line 55");
+        close(ff);
+        int file = open("checkFile",O_RDONLY|O_WRONLY|O_TRUNC,0666);
         fflush(stdout);
-        int backup_stdout = dup(STDOUT_FILENO); //err(backup_stdout,"line 57");
-        int a = dup2(file, STDOUT_FILENO); //err(a,"line 58");
-        int b = close(file); //err(b,"line 59");
-        int c = execvp(cmdargv[0],cmdargv);//err(c,"line 60");
-        int d = dup2(backup_stdout,STDOUT_FILENO);//err(d,"line 61");
+        int backup_stdout = dup(STDOUT_FILENO);
+        int a = dup2(file, STDOUT_FILENO);
+        int b = close(file);
+        int c = execvp(cmdargv[0],cmdargv);
+        int d = dup2(backup_stdout,STDOUT_FILENO);
         close(file);
         exit(0);
     }else{
@@ -78,32 +80,49 @@ int parse(char word[]){
         char wds [100] = "";
         int status;
         wait(&status);
-        int file = open("checkFile",O_RDONLY,0644);//err(file,"line 65");
-        int s = read(file,string,len); //err(s,"line 68");
+        int file = open("checkFile",O_RDONLY,666);
+        int s = read(file,string,len);
         printf("read from file: %s\n",string);
         int il = strcmp(string, cpy);
+        if(strcmp(string, "") == 0) return 1; 
         printf("compared: %d\n",il);
-        FILE * u = fopen("usedWords", "x");
-        FILE * usedWords = fopen("usedWords", "r+");
+        int l = open("usedWords", O_CREAT|O_EXCL,0666);
+        FILE * usedWords = fopen("usedWords", "r+"); if(usedWords == NULL) printf("fopen failed\n");
+        // printf("read: %s\n",wds);
+        strcat(cpy,"\n");
         while(fgets(wds,100,usedWords)!= NULL){
-        //     if(strcmp(string,wds) == 0) return 1;
+            if(strcmp(wds, cpy) == 0) return 2;
         }
+        int uWords = open("usedWords",O_APPEND|O_WRONLY,0644);
+        write(uWords,cpy,strlen(cpy));
+        printf("added %s to usedWords\n",cpy);
+        close(uWords);
+        close(file);
+        close(s);
+        close(l);
     }
     return 0;
 }
 //---------------------------------------------------------------------------------------------
-int main(int argc, char * argv[]){
-    
-    printf("Tests:\n");
-    char c[] = "ahfdsgakjdshgf";
-    int i;
-    char string[100];
-    i = parse(c);
-    printf("returned: %d\n", i);
-    // int f = open("test.txt",O_RDONLY);
-    // read(f,string,100);
-    // printf("test: %s\n",string);
-}
+// int main(int argc, char * argv[]){
+//     printf("Tests:\n");
+//     int i;
+//     char a[]="hi";
+//     char b[]="asjdfhajsf";
+//     char c[]="hi";
+//     char d[]="yes";
+//     i = parse(a);
+//     printf("returned: %d\n", i);
+//     printf("--------------------------\n");
+//     i = parse(b);
+//     printf("returned: %d\n", i);
+//     printf("--------------------------\n");
+//     i = parse(c);
+//     printf("returned: %d\n", i);
+//     printf("--------------------------\n");
+//     i = parse(d);
+//     printf("returned: %d\n", i);
+// }
 
 int cur_players(struct player **ps){
     int cur_clients = 0;
