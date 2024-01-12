@@ -186,3 +186,15 @@ void command_logic(struct player **ps, struct player *p, char* line, int* game_s
     else write(p->sd, buff, sizeof(buff));
 }
 
+char * randPrompt(){
+    char s[2] = "";
+    int * i;
+    int f = open("/dev/random", O_RDONLY, 0644);
+    read(f,i,4);
+    close(f);
+    *i %= 1304;
+    FILE * prompts = fopen("prompts.txt", "r");
+    fseek(prompts, 0, *i * 3);
+    
+    return s;
+}
