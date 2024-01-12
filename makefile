@@ -27,3 +27,16 @@ clean:
 	rm *.o
 	rm ./client
 	rm ./server
+
+# default:
+# compile runme: gameFunctions.o gameFunctions.h
+# 	@gcc gameFunctions.o gameFunctions.h -o runme
+# run: runme
+# 	@./runme $(ARGS)
+# clean: 
+# 	@rm -rf gameFunctions.o
+# 	@rm -rf runme
+# 	@rm -rf usedWords
+# 	@rm -rf checkFile 
+# gameFuctions.o:gameFunctions.c
+# 	@gcc gameFunctions.c -c
