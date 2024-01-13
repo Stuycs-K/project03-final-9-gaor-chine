@@ -46,6 +46,15 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - created preliminary word checker for correct/incorrectness and effects
 - bug where the timer is not reset when game starts (timer afterwards works as intended though)
 
+### 2024-01-12 - Debugging and lives mechanic
+- Most of all known bugs fixed:
+  - timer is now reset when the game starts
+  - connections between different computers is successful
+  - fixed inputs being printed twice into client
+  - fixed server printing help command
+- added lives markers before names when chatting during a game (changes as lives change)
+- edited some strings for better readability
+
 ## Edmund Chin
 
 ### 2024-01-02 - Found Partner
