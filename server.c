@@ -18,7 +18,7 @@ void chat_logic(struct player** ps, struct player* p, char* line, int* game_stat
     //printf("%d", (int)(sizeof(ps)/sizeof(struct player)));
     char buff[BUFFER_SIZE] = "";
     for (int x = 0; x < MAX_CLIENTS; x++){
-        if(ps[x] != NULL){
+        if(ps[x] != NULL && ps[x] != p){ //do not write to sender
             if (*game_status == 1) {
                 char num_lives[10] = "";
                 if (p->lives == 1) sprintf(num_lives, "(O)(X)");
@@ -91,7 +91,7 @@ int main(int argc, char *argv[] ) {
         int i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
         if (i == 0) { //timeout occured
             if (game_status == 1){
-                sprintf(buff, "The bomb exploded! %s lost a life.", player_turn->name);
+                sprintf(buff, "|| The bomb exploded! %s lost a life.", player_turn->name);
                 (player_turn->lives)--;
                 write_all(players, buff);
                 cur_player_index = next_player_index(cur_player_index, players);
@@ -117,9 +117,9 @@ int main(int argc, char *argv[] ) {
                     break; //to add once
                 }
             }
-            sprintf(buff, "Welcome to Word Bomb, %s!", p->name);
+            sprintf(buff, "|| Welcome to Word Bomb, %s!", p->name);
             write(p->sd, buff, BUFFER_SIZE);
-            sprintf(buff, "Type \"/help\" for all commands.");
+            sprintf(buff, "|| Type \"/help\" for all commands.");
             write(p->sd, buff, BUFFER_SIZE);
             printf("Connected, waiting for data.\n");
 
@@ -160,14 +160,14 @@ int main(int argc, char *argv[] ) {
                             if (sd == player_turn->sd){ //if input is from current player's turn
                                 // PUT CHECKS IN HERE FOR WORDS & STUFF
                                 if (strcmp(buff, "correct") == 0){
-                                    write_all(players, "thats right!");
+                                    write_all(players, "|| thats right!");
                                     cur_player_index = next_player_index(cur_player_index, players);
                                     timeout.tv_sec = 10;
                                     timeout.tv_usec = 0;
                                 }else{
                                     char reply[BUFFER_SIZE] = "";
-                                    sprintf(reply, "thats wrong, try again!");
-                                    write(player_turn->sd, buff, BUFFER_SIZE);
+                                    sprintf(reply, "|| thats wrong, try again!");
+                                    write(player_turn->sd, reply, BUFFER_SIZE);
                                 }
                             }
                             chat_logic(players, players[x], buff, &temp_game_status);

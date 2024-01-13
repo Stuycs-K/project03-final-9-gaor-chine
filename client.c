@@ -25,7 +25,7 @@ int main(int argc, char *argv[] ) {
     if (server_socket == -1) err(24, "client handshake failed");
     printf("client connected.\n");
     
-    printf("Enter your username: ");
+    printf("|| Enter your username: ");
     char buff[BUFFER_SIZE] = "";
     fgets(buff, BUFFER_SIZE, stdin);
     stripNewLine(buff);

@@ -155,7 +155,7 @@ void help(struct player *p){ //show all commands
     char buff[BUFFER_SIZE] = "|| Commands:\n";
     strcat(buff, "|| /help : show all commands\n");
     strcat(buff, "|| /start : start the Word Bomb game");
-    printf("%s", buff);
+    //printf("%s", buff);
     write(p->sd, buff, BUFFER_SIZE);
 }
 
@@ -164,24 +164,24 @@ void start_game(struct player **ps, int* game_status){ //starts the game
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL) ps[x]->lives = 2;
     }
-    char buff[BUFFER_SIZE] = "Game is starting.";
+    char buff[BUFFER_SIZE] = "|| Game is starting.";
     write_all(ps, buff);
 }
 
 void command_logic(struct player **ps, struct player *p, char* line, int* game_status){
     printf("game_status: %d\n", *game_status);
     char * cmdargv[64];
-    char buff[100] = "command does not exist.";
+    char buff[100] = "|| Command does not exist.";
     parse_args(line, cmdargv);
     //printf("%s\n", cmdargv[0]);
     if (strcmp(cmdargv[0], "/help") == 0) help(p);
     else if (strcmp(cmdargv[0], "/start") == 0){
         if(*game_status == 1){
-            sprintf(buff, "Game is in progress.");
+            sprintf(buff, "|| Game is in progress.");
             write(p->sd, buff, sizeof(buff));
         }
         else if (cur_players(ps) < 2){
-            sprintf(buff, "Game requires at least 2 players. Current number of players: %d", cur_players(ps));
+            sprintf(buff, "|| Game requires at least 2 players. Current number of players: %d", cur_players(ps));
             write(p->sd, buff, sizeof(buff));
         }
         else start_game(ps, game_status);
