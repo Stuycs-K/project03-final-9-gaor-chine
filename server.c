@@ -54,6 +54,7 @@ int main(int argc, char *argv[] ) {
     int temp_game_status = 0;
     int game_status = 0;
     int cur_player_index = 0;
+    char prompt[5] = "";
 
     while (1){
         
@@ -75,6 +76,7 @@ int main(int argc, char *argv[] ) {
         if (game_status == 0 && temp_game_status == 1){ //game just started, reset the timeout
             timeout.tv_sec = 10;
             timeout.tv_usec = 0;
+            randPrompt(prompt);
         }
         game_status = temp_game_status; // ONLY UPDATES HERE to start logic from beginning
         if (game_status == 1) { //game logic
@@ -84,8 +86,8 @@ int main(int argc, char *argv[] ) {
             }
 
             player_turn = players[cur_player_index];
-            sprintf(buff, "It is your turn now.");
-            write(player_turn->sd, buff, BUFFER_SIZE);
+            sprintf(buff, "|| It is %s's turn.\n|| The prompt is: %s", player_turn->name, prompt);
+            write_all(players, buff);
         }
 
         int i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
@@ -157,7 +159,9 @@ int main(int argc, char *argv[] ) {
                         //prioritize commands, to game inputs, to chat
                         if(buff[0] == '/') command_logic(players, players[x], buff, &temp_game_status);
                         else if (game_status == 1) { 
-                            check_logic(players, players[x], cur_player_index, buff, &temp_game_status, &timeout);
+                            if (sd = player_turn->sd){ //if input is from current player's turn
+                                check_logic(players, players[x], &cur_player_index, buff, &temp_game_status, &timeout, prompt);
+                            }
                             chat_logic(players, players[x], buff, &temp_game_status);
                         }
                         else chat_logic(players, players[x], buff, &temp_game_status);

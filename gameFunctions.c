@@ -37,7 +37,7 @@ char * randPrompt(char* buff){
     for(int j = 0; j < i; j++){
         fgets(str,100,prompts);
     }
-    fgets(buff,100,prompts);
+    fgets(buff,sizeof(buff),prompts);
     // printf("randomized prompt: %s\n",s);
     return buff;
 }
@@ -157,6 +157,15 @@ int next_player_index(int cur_player_index, struct player **ps){
     }
 }
 
+int switch_turn(){
+    char buff[BUFFER_SIZE] = "";
+    *cur_p = next_player_index(*cur_p, ps);
+    timeout->tv_sec = 10;
+    timeout->tv_usec = 0;
+    randPrompt(prompt);
+    sprintf(buff, "|| It is %s's turn.\n|| The prompt is: %s", player_turn->name, prompt);
+    write_all(players, buff);
+}
 
 void write_all(struct player** ps, char * buff){
     for (int x = 0; x < MAX_CLIENTS; x++){
@@ -205,25 +214,25 @@ void command_logic(struct player **ps, struct player *p, char* line, int* game_s
     else write(p->sd, buff, sizeof(buff));
 }
 
-void check_logic(struct player **ps, struct player *sent_p, int *cur_p, char* line, int* game_status, struct timeval *timeout){
-    if (sent_p->sd == ps[*cur_p]->sd){ //if input is from current player's turn
-        // PUT CHECKS IN HERE FOR WORDS & STUFF
-        int check = parse(line);
-        if (check == 0){
-            write_all(ps, "|| thats right!");
-            *cur_p = next_player_index(*cur_p, ps);
-            timeout->tv_sec = 10;
-            timeout->tv_usec = 0;
-        }else if(check == 1){
-            char reply[BUFFER_SIZE] = "";
-            sprintf(reply, "|| word has already been used, try again!");
-            write(ps[*cur_p]->sd, reply, BUFFER_SIZE);
-        }else if(check == 2){
-            char reply[BUFFER_SIZE] = "";
-            sprintf(reply, "|| word doesn't exist, try again!");
-            write(ps[*cur_p]->sd, reply, BUFFER_SIZE);
-        }
+void check_logic(struct player **ps, struct player *sent_p, int *cur_p, char* line,
+                int* game_status, struct timeval *timeout, char* prompt){
+    int check = parse(line);
+    if (check == 0){
+        write_all(ps, "|| thats right!");
+        *cur_p = next_player_index(*cur_p, ps);
+        timeout->tv_sec = 10;
+        timeout->tv_usec = 0;
+        randPrompt(prompt);
+    }else if(check == 1){
+        char reply[BUFFER_SIZE] = "";
+        sprintf(reply, "|| word has already been used, try again!");
+        write(ps[*cur_p]->sd, reply, BUFFER_SIZE);
+    }else if(check == 2){
+        char reply[BUFFER_SIZE] = "";
+        sprintf(reply, "|| word doesn't exist, try again!");
+        write(ps[*cur_p]->sd, reply, BUFFER_SIZE);
     }
+
 }
 
 
