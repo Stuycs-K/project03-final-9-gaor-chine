@@ -156,25 +156,8 @@ int main(int argc, char *argv[] ) {
                         printf("Recieved from client '%s'\n",buff);
                         //prioritize commands, to game inputs, to chat
                         if(buff[0] == '/') command_logic(players, players[x], buff, &temp_game_status);
-                        else if (game_status == 1) {
-                            if (sd == player_turn->sd){ //if input is from current player's turn
-                                // PUT CHECKS IN HERE FOR WORDS & STUFF
-                                int check = parse(buff);
-                                if (check == 0){
-                                    write_all(players, "|| thats right!");
-                                    cur_player_index = next_player_index(cur_player_index, players);
-                                    timeout.tv_sec = 10;
-                                    timeout.tv_usec = 0;
-                                }else if(check == 1){
-                                    char reply[BUFFER_SIZE] = "";
-                                    sprintf(reply, "|| word has already been used, try again!");
-                                    write(player_turn->sd, buff, BUFFER_SIZE);
-                                }else if(check == 2){
-                                    char reply[BUFFER_SIZE] = "";
-                                    sprintf(reply, "|| word doesn't exist, try again!");
-                                    write(player_turn->sd, buff, BUFFER_SIZE);
-                                }
-                            }
+                        else if (game_status == 1) { 
+                            check_logic(players, players[x], cur_player_index, buff, &temp_game_status, &timeout);
                             chat_logic(players, players[x], buff, &temp_game_status);
                         }
                         else chat_logic(players, players[x], buff, &temp_game_status);
