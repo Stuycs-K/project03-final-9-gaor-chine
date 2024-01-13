@@ -95,8 +95,9 @@ int main(int argc, char *argv[] ) {
         if (FD_ISSET(listen_socket, &read_fds)) {
             //accept the connection
             int client_socket = server_tcp_handshake(listen_socket);
-            if (client_socket == -1) err(24, "server handshake failed");
+            if (client_socket == -1) err(98, "server handshake failed");
             read(client_socket, buff, BUFFER_SIZE); //read for username
+            //printf("%s", buff);
             struct player * p = create_player(buff, client_socket);
 
             for (int x = 0; x < MAX_CLIENTS; x++){
