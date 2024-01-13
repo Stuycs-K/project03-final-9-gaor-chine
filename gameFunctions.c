@@ -161,6 +161,9 @@ void help(struct player *p){ //show all commands
 
 void start_game(struct player **ps, int* game_status){ //starts the game
     *game_status = 1; //change to true
+    for (int x = 0; x < MAX_CLIENTS; x++){
+        if(ps[x] != NULL) ps[x]->lives = 2;
+    }
     char buff[BUFFER_SIZE] = "Game is starting.";
     write_all(ps, buff);
 }

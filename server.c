@@ -11,7 +11,7 @@ void rot13(char* line){
     }
 }
 
-void chat_logic(struct player** ps, struct player* p, char* line){
+void chat_logic(struct player** ps, struct player* p, char* line, int* game_status){
     //rot13(line);
 
     //printf("writing...\n");
@@ -19,7 +19,15 @@ void chat_logic(struct player** ps, struct player* p, char* line){
     char buff[BUFFER_SIZE] = "";
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL){
-            sprintf(buff, "%s: %s", p->name, line);
+            if (*game_status == 1) {
+                char num_lives[10] = "";
+                if (p->lives == 1) sprintf(num_lives, "(O)(X)");
+                else if (p->lives == 2) sprintf(num_lives, "(O)(O)");
+                else sprintf(num_lives, "(DEAD)");
+                sprintf(buff, "%s %s: %s", num_lives, p->name, line); //shows lives
+            }
+            else sprintf(buff, "%s: %s", p->name, line);
+            
             int b = write(ps[x]->sd, buff, BUFFER_SIZE);
             if (b == -1) err(16, "server write broke");
         }
@@ -81,9 +89,10 @@ int main(int argc, char *argv[] ) {
         }
 
         int i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
-        if (i == 0) {
+        if (i == 0) { //timeout occured
             if (game_status == 1){
-                sprintf(buff, "%s timed out, lose a life", player_turn->name);
+                sprintf(buff, "The bomb exploded! %s lost a life.", player_turn->name);
+                (player_turn->lives)--;
                 write_all(players, buff);
                 cur_player_index = next_player_index(cur_player_index, players);
             }
@@ -161,9 +170,9 @@ int main(int argc, char *argv[] ) {
                                     write(player_turn->sd, buff, BUFFER_SIZE);
                                 }
                             }
-                            chat_logic(players, players[x], buff);
+                            chat_logic(players, players[x], buff, &temp_game_status);
                         }
-                        else chat_logic(players, players[x], buff);
+                        else chat_logic(players, players[x], buff, &temp_game_status);
                     }
                 }
             }
