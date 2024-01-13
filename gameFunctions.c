@@ -26,6 +26,22 @@
 //   	exit(1);
 //   }
 // }
+char * randPrompt(){
+    char s[100] = "";
+    char str[100];
+    int rfile = open("/dev/urandom",O_RDONLY,444);
+    int i;
+    read(rfile, &i, 4);
+    i = i % 1000;
+    if(i < 0) i *= -1;
+    FILE * prompts = fopen("prompts.txt", "r");
+    for(int j = 0; j < i/3; j++){
+        fgets(str,100,prompts);
+    }
+    fgets(s,100,prompts);
+    // printf("randomized prompt: %s\n",s);
+    return s;
+}
 
 struct player* create_player(char *name, int sd){
     struct player *p = malloc(sizeof(struct player));
@@ -105,23 +121,24 @@ int parse(char word[]){
 }
 //---------------------------------------------------------------------------------------------
 // int main(int argc, char * argv[]){
-//     printf("Tests:\n");
-//     int i;
-//     char a[]="hi";
-//     char b[]="asjdfhajsf";
-//     char c[]="hi";
-//     char d[]="yes";
-//     i = parse(a);
-//     printf("returned: %d\n", i);
-//     printf("--------------------------\n");
-//     i = parse(b);
-//     printf("returned: %d\n", i);
-//     printf("--------------------------\n");
-//     i = parse(c);
-//     printf("returned: %d\n", i);
-//     printf("--------------------------\n");
-//     i = parse(d);
-//     printf("returned: %d\n", i);
+//     // printf("Tests:\n");
+//     // int i;
+//     // char a[]="hi";
+//     // char b[]="asjdfhajsf";
+//     // char c[]="hi";
+//     // char d[]="yes";
+//     // i = parse(a);
+//     // printf("returned: %d\n", i);
+//     // printf("--------------------------\n");
+//     // i = parse(b);
+//     // printf("returned: %d\n", i);
+//     // printf("--------------------------\n");
+//     // i = parse(c);
+//     // printf("returned: %d\n", i);
+//     // printf("--------------------------\n");
+//     // i = parse(d);
+//     // printf("returned: %d\n", i);
+//     randPrompt();
 // }
 
 int cur_players(struct player **ps){
@@ -188,4 +205,5 @@ void command_logic(struct player **ps, struct player *p, char* line, int* game_s
     }
     else write(p->sd, buff, sizeof(buff));
 }
+
 
