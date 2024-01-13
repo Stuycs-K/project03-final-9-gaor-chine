@@ -12,7 +12,7 @@ int client_tcp_handshake(char * server_address) {
   hints = calloc(1,sizeof(struct addrinfo));
   hints->ai_family = AF_INET;
   hints->ai_socktype = SOCK_STREAM; //TCP socket
-  getaddrinfo(NULL, PORT, hints, &results);
+  getaddrinfo(server_address, PORT, hints, &results);
   
   int serverd;
   //create the socket

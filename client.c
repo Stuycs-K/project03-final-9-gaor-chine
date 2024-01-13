@@ -19,11 +19,13 @@ int main(int argc, char *argv[] ) {
     char* IP = "127.0.0.1";
     if(argc>1){
         IP=argv[1];
+        //printf("%s", IP);
     }
     int server_socket = client_tcp_handshake(IP);
+    if (server_socket == -1) err(24, "client handshake failed");
     printf("client connected.\n");
     
-    printf("Enter your username: ");
+    printf("|| Enter your username: ");
     char buff[BUFFER_SIZE] = "";
     fgets(buff, BUFFER_SIZE, stdin);
     stripNewLine(buff);

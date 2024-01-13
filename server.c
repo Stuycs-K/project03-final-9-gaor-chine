@@ -11,15 +11,23 @@ void rot13(char* line){
     }
 }
 
-void chat_logic(struct player** ps, struct player* p, char* line){
+void chat_logic(struct player** ps, struct player* p, char* line, int* game_status){
     //rot13(line);
 
     //printf("writing...\n");
     //printf("%d", (int)(sizeof(ps)/sizeof(struct player)));
     char buff[BUFFER_SIZE] = "";
     for (int x = 0; x < MAX_CLIENTS; x++){
-        if(ps[x] != NULL){
-            sprintf(buff, "%s: %s", p->name, line);
+        if(ps[x] != NULL && ps[x] != p){ //do not write to sender
+            if (*game_status == 1) {
+                char num_lives[10] = "";
+                if (p->lives == 1) sprintf(num_lives, "(O)(X)");
+                else if (p->lives == 2) sprintf(num_lives, "(O)(O)");
+                else sprintf(num_lives, "(DEAD)");
+                sprintf(buff, "%s %s: %s", num_lives, p->name, line); //shows lives
+            }
+            else sprintf(buff, "%s: %s", p->name, line);
+            
             int b = write(ps[x]->sd, buff, BUFFER_SIZE);
             if (b == -1) err(16, "server write broke");
         }
@@ -81,9 +89,10 @@ int main(int argc, char *argv[] ) {
         }
 
         int i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
-        if (i == 0) {
+        if (i == 0) { //timeout occured
             if (game_status == 1){
-                sprintf(buff, "%s timed out, lose a life", player_turn->name);
+                sprintf(buff, "|| The bomb exploded! %s lost a life.", player_turn->name);
+                (player_turn->lives)--;
                 write_all(players, buff);
                 cur_player_index = next_player_index(cur_player_index, players);
             }
@@ -95,7 +104,9 @@ int main(int argc, char *argv[] ) {
         if (FD_ISSET(listen_socket, &read_fds)) {
             //accept the connection
             int client_socket = server_tcp_handshake(listen_socket);
+            if (client_socket == -1) err(98, "server handshake failed");
             read(client_socket, buff, BUFFER_SIZE); //read for username
+            //printf("%s", buff);
             struct player * p = create_player(buff, client_socket);
 
             for (int x = 0; x < MAX_CLIENTS; x++){
@@ -106,9 +117,9 @@ int main(int argc, char *argv[] ) {
                     break; //to add once
                 }
             }
-            sprintf(buff, "Welcome to Word Bomb, %s!", p->name);
+            sprintf(buff, "|| Welcome to Word Bomb, %s!", p->name);
             write(p->sd, buff, BUFFER_SIZE);
-            sprintf(buff, "Type \"/help\" for all commands.");
+            sprintf(buff, "|| Type \"/help\" for all commands.");
             write(p->sd, buff, BUFFER_SIZE);
             printf("Connected, waiting for data.\n");
 
@@ -150,23 +161,23 @@ int main(int argc, char *argv[] ) {
                                 // PUT CHECKS IN HERE FOR WORDS & STUFF
                                 int check = parse(buff);
                                 if (check == 0){
-                                    write_all(players, "thats right!");
+                                    write_all(players, "|| thats right!");
                                     cur_player_index = next_player_index(cur_player_index, players);
                                     timeout.tv_sec = 10;
                                     timeout.tv_usec = 0;
                                 }else if(check == 1){
                                     char reply[BUFFER_SIZE] = "";
-                                    sprintf(reply, "word has already been used, try again!");
+                                    sprintf(reply, "|| word has already been used, try again!");
                                     write(player_turn->sd, buff, BUFFER_SIZE);
                                 }else if(check == 2){
                                     char reply[BUFFER_SIZE] = "";
-                                    sprintf(reply, "word doesn't exist, try again!");
+                                    sprintf(reply, "|| word doesn't exist, try again!");
                                     write(player_turn->sd, buff, BUFFER_SIZE);
                                 }
                             }
-                            chat_logic(players, players[x], buff);
+                            chat_logic(players, players[x], buff, &temp_game_status);
                         }
-                        else chat_logic(players, players[x], buff);
+                        else chat_logic(players, players[x], buff, &temp_game_status);
                     }
                 }
             }
