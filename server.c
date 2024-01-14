@@ -159,8 +159,10 @@ int main(int argc, char *argv[] ) {
                         //prioritize commands, to game inputs, to chat
                         if(buff[0] == '/') command_logic(players, players[x], buff, &temp_game_status);
                         else if (game_status == 1) { 
-                            if (sd = player_turn->sd){ //if input is from current player's turn
-                                check_logic(players, players[x], &cur_player_index, buff, &temp_game_status, &timeout, prompt);
+                            if (sd == player_turn->sd){ //if input is from current player's turn
+                                char temp[BUFFER_SIZE] = "";
+                                strcpy(temp, buff);
+                                check_logic(players, players[x], &cur_player_index, temp, &temp_game_status, &timeout, prompt);
                             }
                             chat_logic(players, players[x], buff, &temp_game_status);
                         }

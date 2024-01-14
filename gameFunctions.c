@@ -38,6 +38,7 @@ char * randPrompt(char* buff){
         fgets(str,100,prompts);
     }
     fgets(buff,sizeof(buff),prompts);
+    stripNewLine(buff);
     // printf("randomized prompt: %s\n",s);
     return buff;
 }
@@ -66,7 +67,7 @@ returns 2 if word does not exist
 returns 1 if word exists but is used
 returns 0 of word exists
 */
-int parse(char word[]){
+int parse(char *word){
     char cpy[100] = "";
     strcpy(cpy, word);
     char * cmdargv[64];
@@ -155,16 +156,6 @@ int next_player_index(int cur_player_index, struct player **ps){
     for (int x = 0; x < cur_player_index; x++){ //loop back around
         if (ps[x] != NULL) return x;
     }
-}
-
-int switch_turn(){
-    char buff[BUFFER_SIZE] = "";
-    *cur_p = next_player_index(*cur_p, ps);
-    timeout->tv_sec = 10;
-    timeout->tv_usec = 0;
-    randPrompt(prompt);
-    sprintf(buff, "|| It is %s's turn.\n|| The prompt is: %s", player_turn->name, prompt);
-    write_all(players, buff);
 }
 
 void write_all(struct player** ps, char * buff){
