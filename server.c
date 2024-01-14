@@ -11,29 +11,6 @@ void rot13(char* line){
     }
 }
 
-void chat_logic(struct player** ps, struct player* p, char* line, int* game_status){
-    //rot13(line);
-
-    //printf("writing...\n");
-    //printf("%d", (int)(sizeof(ps)/sizeof(struct player)));
-    char buff[BUFFER_SIZE] = "";
-    for (int x = 0; x < MAX_CLIENTS; x++){
-        if(ps[x] != NULL && ps[x] != p){ //do not write to sender
-            if (*game_status == 1) {
-                char num_lives[10] = "";
-                if (p->lives == 1) sprintf(num_lives, "(O)(X)");
-                else if (p->lives == 2) sprintf(num_lives, "(O)(O)");
-                else sprintf(num_lives, "(DEAD)");
-                sprintf(buff, "%s %s: %s", num_lives, p->name, line); //shows lives
-            }
-            else sprintf(buff, "%s: %s", p->name, line);
-            
-            int b = write(ps[x]->sd, buff, BUFFER_SIZE);
-            if (b == -1) err(16, "server write broke");
-        }
-    }
-}
-
 int main(int argc, char *argv[] ) { 
 
     int listen_socket = server_setup();
@@ -53,6 +30,7 @@ int main(int argc, char *argv[] ) {
 
     int temp_game_status = 0;
     int game_status = 0;
+    int temp_cur_player_index = 0;
     int cur_player_index = 0;
     char prompt[5] = "";
 
@@ -74,20 +52,28 @@ int main(int argc, char *argv[] ) {
         struct player *player_turn = players[cur_player_index];
 
         if (game_status == 0 && temp_game_status == 1){ //game just started, reset the timeout
+            printf("game just started\n");
+            for(int x = 0; x < MAX_CLIENTS; x++){
+                if (players[x] != NULL){
+                    cur_player_index = x;
+                    break;
+                }
+            }
             timeout.tv_sec = 10;
             timeout.tv_usec = 0;
             randPrompt(prompt);
+            player_turn = players[cur_player_index];
+            sprintf(buff, "|| It is %s's turn.\n|| The prompt is: %s", player_turn->name, prompt);
+            write_all(players, buff);
         }
         game_status = temp_game_status; // ONLY UPDATES HERE to start logic from beginning
+        cur_player_index = temp_cur_player_index;
         if (game_status == 1) { //game logic
             if (cur_clients == 1){ //check for end game condition
                 temp_game_status = 0;
                 write_all(players, "Game is ending.");
             }
-
             player_turn = players[cur_player_index];
-            sprintf(buff, "|| It is %s's turn.\n|| The prompt is: %s", player_turn->name, prompt);
-            write_all(players, buff);
         }
 
         int i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
@@ -96,10 +82,13 @@ int main(int argc, char *argv[] ) {
                 sprintf(buff, "|| The bomb exploded! %s lost a life.", player_turn->name);
                 (player_turn->lives)--;
                 write_all(players, buff);
-                cur_player_index = next_player_index(cur_player_index, players);
+                switch_turn(players, cur_player_index, &temp_cur_player_index, &timeout, prompt);
             }
-            timeout.tv_sec = 10;
-            timeout.tv_usec = 0;
+            else{
+                timeout.tv_sec = 10;
+                timeout.tv_usec = 0;
+            }
+            
         }
 
         // if listen_socket, accept connection and add to client sockets array
@@ -149,9 +138,7 @@ int main(int argc, char *argv[] ) {
                         // clients[x] = 0;
                         players[x] = 0;
                         if (game_status == 1){
-                            cur_player_index = next_player_index(cur_player_index, players);
-                            timeout.tv_sec = 10;
-                            timeout.tv_usec = 0;
+                            switch_turn(players, cur_player_index, &temp_cur_player_index, &timeout, prompt);
                         }
                     }
                     else{
@@ -159,10 +146,14 @@ int main(int argc, char *argv[] ) {
                         //prioritize commands, to game inputs, to chat
                         if(buff[0] == '/') command_logic(players, players[x], buff, &temp_game_status);
                         else if (game_status == 1) { 
-                            if (sd = player_turn->sd){ //if input is from current player's turn
-                                check_logic(players, players[x], &cur_player_index, buff, &temp_game_status, &timeout, prompt);
+                            char temp[BUFFER_SIZE] = "";
+                            strcpy(temp, buff);
+                            chat_logic(players, players[x], temp, &temp_game_status);
+                            if (sd == player_turn->sd){ //if input is from current player's turn
+                                // char temp[BUFFER_SIZE] = "";
+                                // strcpy(temp, buff);
+                                check_logic(players, players[x], cur_player_index, &temp_cur_player_index, buff, &temp_game_status, &timeout, prompt);
                             }
-                            chat_logic(players, players[x], buff, &temp_game_status);
                         }
                         else chat_logic(players, players[x], buff, &temp_game_status);
                     }
