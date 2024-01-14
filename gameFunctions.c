@@ -26,21 +26,21 @@
 //   	exit(1);
 //   }
 // }
-char * randPrompt(char* buff){
+char * randPrompt(){
+    char s[100] = "";
     char str[100];
     int rfile = open("/dev/urandom",O_RDONLY,444);
     int i;
-    read(rfile, &i, sizeof(int));
-    i = i % 1305;
+    read(rfile, &i, 4);
+    i = i % 1000;
     if(i < 0) i *= -1;
     FILE * prompts = fopen("prompts.txt", "r");
-    for(int j = 0; j < i; j++){
+    for(int j = 0; j < i/3; j++){
         fgets(str,100,prompts);
     }
-    fgets(buff,sizeof(buff),prompts);
-    stripNewLine(buff);
+    fgets(s,100,prompts);
     // printf("randomized prompt: %s\n",s);
-    return buff;
+    return s;
 }
 
 struct player* create_player(char *name, int sd){
@@ -213,24 +213,6 @@ void command_logic(struct player **ps, struct player *p, char* line, int* game_s
         else start_game(ps, game_status);
     }
     else write(p->sd, buff, sizeof(buff));
-}
-
-void check_logic(struct player **ps, struct player *sent_p, int cur_p, int *temp_cur_p, char* line,
-                int* game_status, struct timeval *timeout, char* prompt){
-    int check = parse(line);
-    if (check == 0){
-        write_all(ps, "|| thats right!");
-        switch_turn(ps, cur_p, temp_cur_p, timeout, prompt);
-    }else if(check == 1){
-        char reply[BUFFER_SIZE] = "";
-        sprintf(reply, "|| word has already been used, try again!");
-        write(ps[cur_p]->sd, reply, BUFFER_SIZE);
-    }else if(check == 2){
-        char reply[BUFFER_SIZE] = "";
-        sprintf(reply, "|| word doesn't exist, try again!");
-        write(ps[cur_p]->sd, reply, BUFFER_SIZE);
-    }
-
 }
 
 
