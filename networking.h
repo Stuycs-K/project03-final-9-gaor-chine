@@ -12,6 +12,7 @@
 #include <netdb.h>
 #include <time.h>
 #include <sys/time.h>
+#include "gameFunctions.h"
 
 
 #ifndef NETWORKING_H
@@ -24,4 +25,5 @@ int server_setup();
 int client_tcp_handshake(char*server_address);
 int server_tcp_handshake(int listen_socket);
 void stripNewLine(char* input);
+void chat_logic(struct player** ps, struct player* p, char* line, int* game_status);
 #endif
