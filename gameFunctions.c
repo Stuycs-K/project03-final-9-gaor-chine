@@ -38,7 +38,6 @@ char * randPrompt(char* buff){
         fgets(str,100,prompts);
     }
     fgets(buff,sizeof(buff),prompts);
-    stripNewLine(buff);
     // printf("randomized prompt: %s\n",s);
     return buff;
 }
@@ -67,15 +66,15 @@ returns 2 if word does not exist
 returns 1 if word exists but is used
 returns 0 of word exists
 */
-int parse(char *word){
-    char cpy[BUFFER_SIZE] = "";
+int parse(char word[]){
+    char cpy[100] = "";
     strcpy(cpy, word);
     char * cmdargv[64];
     int len = strlen(word);
     printf("size: %d\n", len);
     int f = fork();
     if(f == 0){
-        char front[BUFFER_SIZE] = "grep ";
+        char front[100] = "grep ";
         char back[] = " words_alpha.txt -w";
         strcat(front,word);
         strcat(front,back);
@@ -92,22 +91,22 @@ int parse(char *word){
         close(file);
         exit(0);
     }else{
-        char string[BUFFER_SIZE]="";
-        char wds [BUFFER_SIZE] = "";
+        char string[100]="";
+        char wds [100] = "";
         int status;
         wait(&status);
         int file = open("checkFile",O_RDONLY,666);
         int s = read(file,string,len);
         printf("read from file: %s\n",string);
         int il = strcmp(string, cpy);
-        if(strcmp(string, "") == 0) return 2; 
+        if(strcmp(string, "") == 0) return 1; 
         printf("compared: %d\n",il);
         int l = open("usedWords", O_CREAT|O_EXCL,0666);
         FILE * usedWords = fopen("usedWords", "r+"); if(usedWords == NULL) printf("fopen failed\n");
         // printf("read: %s\n",wds);
         strcat(cpy,"\n");
         while(fgets(wds,100,usedWords)!= NULL){
-            if(strcmp(wds, cpy) == 0) return 1;
+            if(strcmp(wds, cpy) == 0) return 2;
         }
         int uWords = open("usedWords",O_APPEND|O_WRONLY,0644);
         write(uWords,cpy,strlen(cpy));
@@ -158,6 +157,16 @@ int next_player_index(int cur_player_index, struct player **ps){
     }
 }
 
+int switch_turn(){
+    char buff[BUFFER_SIZE] = "";
+    *cur_p = next_player_index(*cur_p, ps);
+    timeout->tv_sec = 10;
+    timeout->tv_usec = 0;
+    randPrompt(prompt);
+    sprintf(buff, "|| It is %s's turn.\n|| The prompt is: %s", player_turn->name, prompt);
+    write_all(players, buff);
+}
+
 void write_all(struct player** ps, char * buff){
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL){
@@ -165,16 +174,6 @@ void write_all(struct player** ps, char * buff){
             if (b == -1) err(16, "server write broke");
         }
     }
-}
-
-void switch_turn(struct player **ps, int cur_p, int *temp_cur_p, struct timeval *timeout, char* prompt){
-    char buff[BUFFER_SIZE] = "";
-    *temp_cur_p = next_player_index(cur_p, ps);
-    timeout->tv_sec = 10;
-    timeout->tv_usec = 0;
-    randPrompt(prompt);
-    sprintf(buff, "|| It is %s's turn. %d lives remaining.\n|| The prompt is: %s", ps[*temp_cur_p]->name, ps[*temp_cur_p]->lives, prompt);
-    write_all(ps, buff);
 }
 
 void help(struct player *p){ //show all commands
@@ -215,20 +214,23 @@ void command_logic(struct player **ps, struct player *p, char* line, int* game_s
     else write(p->sd, buff, sizeof(buff));
 }
 
-void check_logic(struct player **ps, struct player *sent_p, int cur_p, int *temp_cur_p, char* line,
+void check_logic(struct player **ps, struct player *sent_p, int *cur_p, char* line,
                 int* game_status, struct timeval *timeout, char* prompt){
     int check = parse(line);
     if (check == 0){
         write_all(ps, "|| thats right!");
-        switch_turn(ps, cur_p, temp_cur_p, timeout, prompt);
+        *cur_p = next_player_index(*cur_p, ps);
+        timeout->tv_sec = 10;
+        timeout->tv_usec = 0;
+        randPrompt(prompt);
     }else if(check == 1){
         char reply[BUFFER_SIZE] = "";
         sprintf(reply, "|| word has already been used, try again!");
-        write(ps[cur_p]->sd, reply, BUFFER_SIZE);
+        write(ps[*cur_p]->sd, reply, BUFFER_SIZE);
     }else if(check == 2){
         char reply[BUFFER_SIZE] = "";
         sprintf(reply, "|| word doesn't exist, try again!");
-        write(ps[cur_p]->sd, reply, BUFFER_SIZE);
+        write(ps[*cur_p]->sd, reply, BUFFER_SIZE);
     }
 
 }

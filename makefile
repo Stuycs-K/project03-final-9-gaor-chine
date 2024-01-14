@@ -25,8 +25,6 @@ networking.o: networking.c
 
 clean:
 	rm *.o
-	rm usedWords
-	rm checkFile
 	rm ./client
 	rm ./server
 
