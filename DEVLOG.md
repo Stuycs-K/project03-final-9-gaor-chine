@@ -55,6 +55,10 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 - added lives markers before names when chatting during a game (changes as lives change)
 - edited some strings for better readability
 
+### 2024-01-13 - Helper functions and more debugging
+- created helper function for checking the word inputted
+- spent a lot a lot of time trying to debug random characters being printed, unsucessful
+
 ## Edmund Chin
 
 ### 2024-01-02 - Found Partner
