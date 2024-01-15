@@ -19,7 +19,8 @@ int client_tcp_handshake(char * server_address) {
   serverd = socket(AF_INET, SOCK_STREAM, 0);
 
   //connect to the server
-  connect(serverd, results->ai_addr, results->ai_addrlen);
+  int i = connect(serverd, results->ai_addr, results->ai_addrlen);
+  if (i == -1) err(23, "client_tcp_handshake connect fail");
 
   free(hints);
   freeaddrinfo(results);
@@ -38,6 +39,7 @@ int server_tcp_handshake(int listen_socket){
     socklen_t sock_size;
     struct sockaddr_storage client_address;
     sock_size = sizeof(client_address);
+    printf("listen_socket: %d\n",listen_socket);
     client_socket = accept(listen_socket,(struct sockaddr *)&client_address, &sock_size);
     if (client_socket == -1) err(41, "server_tcp_handshake couldn't accept");
   
@@ -62,7 +64,7 @@ int server_setup() {
   //this code should get around the address in use error
   int yes = 1;
   int sockOpt =  setsockopt(clientd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
-  err(sockOpt,"sockopt  error");
+  if (sockOpt == -1) err(65,"sockopt  error");
   
   //bind the socket to address and port
   bind(clientd, results->ai_addr, results->ai_addrlen);
@@ -87,8 +89,6 @@ void stripNewLine(char* input){
 }
 
 void err(int i, char*message){
-  if(i < 0){
-	  printf("Error: %s - %s\n",message, strerror(errno));
+	  printf("Error line %d: %s - %s\n", i, message, strerror(errno));
   	exit(1);
-  }
 }

@@ -18,7 +18,7 @@ int main(int argc, char *argv[] ) {
     //int clients[MAX_CLIENTS]; // store client socket file descriptors
     //for (int x = 0; x < MAX_CLIENTS; x++) clients[x] = 0; // initialize
     
-    struct player** players = calloc(MAX_CLIENTS, sizeof(struct player));
+    struct player** players = calloc(MAX_CLIENTS, sizeof(struct player*));
     
     fd_set read_fds;
     //fd_set cur_player_only;
@@ -126,8 +126,6 @@ int main(int argc, char *argv[] ) {
 
         //if existing client
         for (int x = 0; x < MAX_CLIENTS; x++){
-
-            //int sd = clients[x];
             int sd;
             if (players[x] != NULL) { //player exists
             
@@ -148,8 +146,8 @@ int main(int argc, char *argv[] ) {
                             next_player_i = next_player_index(cur_player_index, players);
                             timeout.tv_sec = 10;
                             timeout.tv_usec = 0;
-                            snprintf(temp, BUFFER_SIZE, "|| It is %s's turn.\n|| The prompt is: %s\n", players[next_player_i]->name, prompt);
-                            write_all(players, temp);
+                            snprintf(buff, BUFFER_SIZE, "|| It is %s's turn.\n|| The prompt is: %s\n", players[next_player_i]->name, prompt);
+                            write_all(players, buff);
                         }
                     }
                     else{
@@ -162,7 +160,7 @@ int main(int argc, char *argv[] ) {
                             // strcat(temp, buff);
                             chat_logic(players, players[x], temp, &game_status);
                             if (sd == player_turn->sd){ //if input is from current player's turn
-                                check_logic(players, players[x], &next_player_i, &cur_player_index, temp, &temp_game_status, &timeout, prompt);
+                                check_logic(players, players[x], &next_player_i, &cur_player_index, temp, &temp_game_status, &timeout, &prompt);
                             }
                         }
                         else chat_logic(players, players[x], temp, &game_status);

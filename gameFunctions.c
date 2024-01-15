@@ -115,7 +115,6 @@ int parse(char *word){
         printf("added %s to usedWords\n",cpy);
         close(uWords);
         close(file);
-        close(s);
         close(l);
     }
     return 0;
@@ -168,6 +167,7 @@ void write_all(struct player** ps, char * buff){
     strcat(temp, buff);
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL){
+            printf("%ld", strlen(temp));
             int b = write(ps[x]->sd, temp, strlen(temp)+1);
             if (b == -1) err(16, "server write broke");
         }
@@ -199,16 +199,17 @@ void chat_logic(struct player** ps, struct player* p, char* line, int* game_stat
     char buff[BUFFER_SIZE] = "";
     printf("line: %s strlen(line): %ld\n", line, strlen(line));
     for (int x = 0; x < MAX_CLIENTS; x++){
-        if(ps[x] != NULL && ps[x] != p){ //do not write to sender
+        if(ps[x] != NULL && ps[x]->sd != p->sd){ //do not write to sender
             if (*game_status == 1) {
                 char num_lives[10] = "";
-                if (p->lives == 1) sprintf(num_lives, "(O)(X)");
-                else if (p->lives == 2) sprintf(num_lives, "(O)(O)");
-                else sprintf(num_lives, "(DEAD)");
+                if (p->lives == 1) strcat(num_lives, "(O)(X)");
+                else if (p->lives == 2) strcat(num_lives, "(O)(O)");
+                else strcat(num_lives, "(DEAD)");
                 snprintf(buff, BUFFER_SIZE, "%s %s: %s\n", num_lives, p->name, line); //shows lives
             }
             else snprintf(buff, BUFFER_SIZE, "%s: %s\n", p->name, line);
             printf("chat: %s\n", buff);
+            printf("writing to: %d\n", ps[x]->sd);
             int b = write(ps[x]->sd, buff, strlen(buff)+1);
             if (b == -1) err(16, "server write broke");
         }
@@ -237,23 +238,23 @@ void command_logic(struct player **ps, struct player *p, char* line, int* temp_g
 }
 
 void check_logic(struct player **ps, struct player *sent_p, int *temp_cur_p, int *cur_p, char* line,
-                int* game_status, struct timeval *timeout, char* prompt){
+                int* game_status, struct timeval *timeout, char** prompt){
     int check = parse(line);
     if (check == 0){    
         char reply[BUFFER_SIZE] = "";
         char temp[] = "|| thats right!\n";
+        strcpy(*prompt, randPrompt());
+        snprintf(reply, BUFFER_SIZE, "%s|| It is %s's turn.\n|| The prompt is: %.3s\n", temp, ps[next_player_index(*cur_p, ps)]->name, *prompt);
+        write_all(ps, reply);
+        *temp_cur_p = next_player_index(*cur_p, ps);
         timeout->tv_sec = 10;
         timeout->tv_usec = 0;
-        *temp_cur_p = next_player_index(*cur_p, ps);
-        strcpy(prompt, randPrompt());
-        snprintf(reply, BUFFER_SIZE, "%s|| It is %s's turn.\n|| The prompt is: %.3s\n", temp, ps[*temp_cur_p]->name, prompt);
-        write_all(ps, reply);
     }else if(check == 1){
-        char reply[] = "|| word has already been used, try again!\n";
-        write(ps[*cur_p]->sd, reply, strlen(reply)+1);
+        char reply[BUFFER_SIZE] = "|| word has already been used, try again!\n";
+        write(sent_p->sd, reply, strlen(reply)+1);
     }else if(check == 2){
-        char reply[] = "|| word doesn't exist, try again!\n";
-        write(ps[*cur_p]->sd, reply, strlen(reply)+1);
+        char reply[BUFFER_SIZE] = "|| word doesn't exist, try again!\n";
+        write(sent_p->sd, reply, strlen(reply)+1);
     }
 
 }

@@ -17,5 +17,5 @@ void command_logic(struct player **ps, struct player *p, char* line, int* temp_g
 void help(struct player *p);
 void start_game(struct player **ps, int* gs_pointer);
 void check_logic(struct player **ps, struct player *sent_p, int *temp_cur_p, int *cur_p, char* line,
-                int* game_status, struct timeval *timeout, char* prompt);
+                int* game_status, struct timeval *timeout, char** prompt);
 #endif
