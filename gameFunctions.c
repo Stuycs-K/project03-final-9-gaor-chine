@@ -27,8 +27,8 @@
 //   }
 // }
 char * randPrompt(){
-    char *buff = malloc(5);
-    char str[100];
+    char *buff = malloc(10);
+    char str[100] = "";
     int rfile = open("/dev/urandom",O_RDONLY,444);
     int i;
     read(rfile, &i, sizeof(int));
@@ -36,11 +36,11 @@ char * randPrompt(){
     if(i < 0) i *= -1;
     FILE * prompts = fopen("prompts.txt", "r");
     for(int j = 0; j < i; j++){
-        fgets(str,100,prompts);
+        fgets(str,90,prompts);
     }
-    fgets(buff,5,prompts);
+    fgets(buff,8,prompts);
     stripNewLine(buff);
-    // printf("randomized prompt: %s\n",s);
+    //printf("randomized prompt: %s\n strlen of prompt: %ld",buff, strlen(buff));
     return buff;
 }
 
@@ -165,10 +165,10 @@ int next_player_index(int cur_player_index, struct player **ps){
 
 void write_all(struct player** ps, char * buff){
     char temp[BUFFER_SIZE] = "";
-    strcpy(temp, buff);
+    strcat(temp, buff);
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL){
-            int b = write(ps[x]->sd, temp, BUFFER_SIZE);
+            int b = write(ps[x]->sd, temp, strlen(temp)+1);
             if (b == -1) err(16, "server write broke");
         }
     }
@@ -177,9 +177,9 @@ void write_all(struct player** ps, char * buff){
 void help(struct player *p){ //show all commands
     char buff[BUFFER_SIZE] = "|| Commands:\n";
     strcat(buff, "|| /help : show all commands\n");
-    strcat(buff, "|| /start : start the Word Bomb game");
+    strcat(buff, "|| /start : start the Word Bomb game\n");
     //printf("%s", buff);
-    write(p->sd, buff, BUFFER_SIZE);
+    write(p->sd, buff, strlen(buff)+1);
 }
 
 void start_game(struct player **ps, int* game_status){ //starts the game
@@ -188,54 +188,76 @@ void start_game(struct player **ps, int* game_status){ //starts the game
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL) ps[x]->lives = 2;
     }
-    char buff[BUFFER_SIZE] = "|| Game is starting.";
-    write_all(ps, buff);
     close(l);
 }
 
-void command_logic(struct player **ps, struct player *p, char* line, int* game_status){
+void chat_logic(struct player** ps, struct player* p, char* line, int* game_status){
+    //rot13(line);
+
+    //printf("writing...\n");
+    //printf("%d", (int)(sizeof(ps)/sizeof(struct player)));
+    char buff[BUFFER_SIZE] = "";
+    printf("line: %s strlen(line): %ld\n", line, strlen(line));
+    for (int x = 0; x < MAX_CLIENTS; x++){
+        if(ps[x] != NULL && ps[x] != p){ //do not write to sender
+            if (*game_status == 1) {
+                char num_lives[10] = "";
+                if (p->lives == 1) sprintf(num_lives, "(O)(X)");
+                else if (p->lives == 2) sprintf(num_lives, "(O)(O)");
+                else sprintf(num_lives, "(DEAD)");
+                snprintf(buff, BUFFER_SIZE, "%s %s: %s\n", num_lives, p->name, line); //shows lives
+            }
+            else snprintf(buff, BUFFER_SIZE, "%s: %s\n", p->name, line);
+            printf("chat: %s\n", buff);
+            int b = write(ps[x]->sd, buff, strlen(buff)+1);
+            if (b == -1) err(16, "server write broke");
+        }
+    }
+}
+
+void command_logic(struct player **ps, struct player *p, char* line, int* temp_game_status, int* game_status){
     printf("game_status: %d\n", *game_status);
     char * cmdargv[64];
-    char buff[BUFFER_SIZE] = "|| Command does not exist.";
+    char buff[BUFFER_SIZE] = "|| Command does not exist.\n";
     parse_args(line, cmdargv);
     //printf("%s\n", cmdargv[0]);
     if (strcmp(cmdargv[0], "/help") == 0) help(p);
     else if (strcmp(cmdargv[0], "/start") == 0){
         if(*game_status == 1){
-            sprintf(buff, "|| Game is in progress.");
-            write(p->sd, buff, BUFFER_SIZE);
+            sprintf(buff, "|| Game is in progress.\n");
+            write(p->sd, buff, strlen(buff)+1);
         }
         else if (cur_players(ps) < 2){
-            sprintf(buff, "|| Game requires at least 2 players. Current number of players: %d", cur_players(ps));
-            write(p->sd, buff, BUFFER_SIZE);
+            sprintf(buff, "|| Game requires at least 2 players. Current number of players: %d\n", cur_players(ps));
+            write(p->sd, buff, strlen(buff)+1);
         }
-        else start_game(ps, game_status);
+        else start_game(ps, temp_game_status);
     }
-    else write(p->sd, buff, BUFFER_SIZE);
+    else write(p->sd, buff, strlen(buff)+1);
 }
 
 void check_logic(struct player **ps, struct player *sent_p, int *temp_cur_p, int *cur_p, char* line,
                 int* game_status, struct timeval *timeout, char* prompt){
-    char temp[BUFFER_SIZE] = "";
     int check = parse(line);
-    char reply[BUFFER_SIZE] = "";
-    if (check == 0){
-        sprintf(temp, "|| thats right!\n");
+    if (check == 0){    
+        char reply[BUFFER_SIZE] = "";
+        char temp[] = "|| thats right!\n";
         timeout->tv_sec = 10;
         timeout->tv_usec = 0;
         *temp_cur_p = next_player_index(*cur_p, ps);
         strcpy(prompt, randPrompt());
-        sprintf(reply, "|| It is %s's turn.\n|| The prompt is: %s", ps[*temp_cur_p]->name, prompt);
-        strcat(temp, reply);
-        write_all(ps, temp);
+        snprintf(reply, BUFFER_SIZE, "%s|| It is %s's turn.\n|| The prompt is: %.3s\n", temp, ps[*temp_cur_p]->name, prompt);
+        write_all(ps, reply);
     }else if(check == 1){
-        sprintf(reply, "|| word has already been used, try again!");
-        write(ps[*cur_p]->sd, reply, BUFFER_SIZE);
+        char reply[] = "|| word has already been used, try again!\n";
+        write(ps[*cur_p]->sd, reply, strlen(reply)+1);
     }else if(check == 2){
-        sprintf(reply, "|| word doesn't exist, try again!");
-        write(ps[*cur_p]->sd, reply, BUFFER_SIZE);
+        char reply[] = "|| word doesn't exist, try again!\n";
+        write(ps[*cur_p]->sd, reply, strlen(reply)+1);
     }
 
 }
+
+
 
 

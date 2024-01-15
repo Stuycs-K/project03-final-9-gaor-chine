@@ -26,10 +26,9 @@ int main(int argc, char *argv[] ) {
     printf("client connected.\n");
     
     printf("|| Enter your username: ");
-    char buff[BUFFER_SIZE] = "";
-    fgets(buff, BUFFER_SIZE, stdin);
-    stripNewLine(buff);
-    write(server_socket, buff, BUFFER_SIZE);
+    char name[NAME_SIZE] = "";
+    fgets(name, NAME_SIZE, stdin);
+    write(server_socket, name, strlen(name)+1);
     //read(server_socket, buff, BUFFER_SIZE); //welcome msg
     //printf("%s\n", buff);
 
@@ -41,19 +40,22 @@ int main(int argc, char *argv[] ) {
         FD_ZERO(&read_fds);
         FD_SET(server_socket,&read_fds);
         FD_SET(STDIN_FILENO,&read_fds);
+        char buff[BUFFER_SIZE] = "";
         int i = select(max_sd+1, &read_fds, NULL, NULL, NULL);
 
         //if standard in, use fgets, writes to server
         if (FD_ISSET(STDIN_FILENO, &read_fds)) {
             fgets(buff, BUFFER_SIZE, stdin);
-            stripNewLine(buff);
-            int b = write(server_socket, buff, BUFFER_SIZE);
+            int b = write(server_socket, buff, strlen(buff)+1);
             if (b==-1) err(46, "writing stdin failed\n");
+            printf("bytes sent: %d\n", b);
             
         }
 
         if (FD_ISSET(server_socket, &read_fds)) { //listening from server
             int bytes = read(server_socket, buff, BUFFER_SIZE);
+            printf("bytes from server: %d\n", bytes);
+            stripNewLine(buff);
             if (bytes == -1) err(80, "check server exit failed\n");
             if (bytes == 0){ //server disconnect
                 printf("server has disconnected.\n");

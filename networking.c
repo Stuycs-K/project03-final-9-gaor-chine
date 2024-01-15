@@ -78,9 +78,9 @@ int server_setup() {
 }
 
 void stripNewLine(char* input){
-    for(int x = 0; x < strlen(input); x++){
+    for(int x = strlen(input); x >= 0; x--){
         if (strcmp(&input[x], "\n") == 0 || strcmp(&input[x], "\r") == 0){
-            input[x] = 0; // removes new line
+            input[x] = '\0'; // removes new line
             break;
         }
     } 
@@ -91,28 +91,4 @@ void err(int i, char*message){
 	  printf("Error: %s - %s\n",message, strerror(errno));
   	exit(1);
   }
-}
-
-void chat_logic(struct player** ps, struct player* p, char* line, int* game_status){
-    //rot13(line);
-
-    //printf("writing...\n");
-    //printf("%d", (int)(sizeof(ps)/sizeof(struct player)));
-    char buff[2* BUFFER_SIZE] = "";
-    //printf("%s", line);
-    for (int x = 0; x < MAX_CLIENTS; x++){
-        if(ps[x] != NULL && ps[x] != p){ //do not write to sender
-            if (*game_status == 1) {
-                char num_lives[10] = "";
-                if (p->lives == 1) sprintf(num_lives, "(O)(X)");
-                else if (p->lives == 2) sprintf(num_lives, "(O)(O)");
-                else sprintf(num_lives, "(DEAD)");
-                sprintf(buff, "%s %s: %s", num_lives, p->name, line); //shows lives
-            }
-            else sprintf(buff, "%s: %s", p->name, line);
-            //printf("%s", buff);
-            int b = write(ps[x]->sd, buff, 2* BUFFER_SIZE);
-            if (b == -1) err(16, "server write broke");
-        }
-    }
 }
