@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <fcntl.h>
+#include <ctype.h>
 #include "networking.h"
 #include "gameFunctions.h"
 
@@ -150,6 +151,7 @@ int cur_players(struct player **ps){
         }
         else printf("0, ");
     }
+    printf("\n");
     return cur_clients;
 }
 
@@ -157,7 +159,7 @@ int next_player_index(int cur_player_index, struct player **ps){
     for (int x = cur_player_index + 1; x < MAX_CLIENTS; x++){
         if (ps[x] != NULL) return x;
     }
-    for (int x = 0; x < cur_player_index; x++){ //loop back around
+    for (int x = 0; x <= cur_player_index; x++){ //loop back around
         if (ps[x] != NULL) return x;
     }
 }
@@ -239,23 +241,41 @@ void command_logic(struct player **ps, struct player *p, char* line, int* temp_g
 
 void check_logic(struct player **ps, struct player *sent_p, int *temp_cur_p, int *cur_p, char* line,
                 int* game_status, struct timeval *timeout, char** prompt){
-    int check = parse(line);
-    if (check == 0){    
-        char reply[BUFFER_SIZE] = "";
-        char temp[] = "|| thats right!\n";
-        strcpy(*prompt, randPrompt());
-        snprintf(reply, BUFFER_SIZE, "%s|| It is %s's turn.\n|| The prompt is: %.3s\n", temp, ps[next_player_index(*cur_p, ps)]->name, *prompt);
-        write_all(ps, reply);
-        *temp_cur_p = next_player_index(*cur_p, ps);
-        timeout->tv_sec = 10;
-        timeout->tv_usec = 0;
-    }else if(check == 1){
-        char reply[BUFFER_SIZE] = "|| word has already been used, try again!\n";
-        write(sent_p->sd, reply, strlen(reply)+1);
-    }else if(check == 2){
-        char reply[BUFFER_SIZE] = "|| word doesn't exist, try again!\n";
+
+    char promptbuff[10];
+    strcpy(promptbuff, *prompt);
+    for(int i = 0; (promptbuff)[i]; i++){
+        promptbuff[i] = tolower(promptbuff[i]);
+    }
+
+    if (strlen(line) < 3){
+        char reply[BUFFER_SIZE] = "|| Word must be at least 3 characters long, try again!\n";
         write(sent_p->sd, reply, strlen(reply)+1);
     }
+    else if (strstr(line, promptbuff) == NULL){
+        char reply[BUFFER_SIZE] = "|| Word does not contain prompt, try again!\n";
+        write(sent_p->sd, reply, strlen(reply)+1);
+    }
+    else{
+        int check = parse(line);
+        if (check == 0){    
+            char reply[BUFFER_SIZE] = "";
+            char temp[] = "|| Thats right!\n";
+            strcpy(*prompt, randPrompt());
+            snprintf(reply, BUFFER_SIZE, "%s|| It is %s's turn.\n|| The prompt is: %.3s\n", temp, ps[next_player_index(*cur_p, ps)]->name, *prompt);
+            write_all(ps, reply);
+            *temp_cur_p = next_player_index(*cur_p, ps);
+            timeout->tv_sec = 10;
+            timeout->tv_usec = 0;
+        }else if(check == 1){
+            char reply[BUFFER_SIZE] = "|| Word has already been used, try again!\n";
+            write(sent_p->sd, reply, strlen(reply)+1);
+        }else if(check == 2){
+            char reply[BUFFER_SIZE] = "|| Word does not exist, try again!\n";
+            write(sent_p->sd, reply, strlen(reply)+1);
+        }
+    }
+    
 
 }
 

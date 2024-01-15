@@ -70,7 +70,12 @@ int main(int argc, char *argv[] ) {
         if (game_status == 1) { //game logic
             if (cur_clients == 1){ //check for end game condition
                 temp_game_status = 0;
-                write_all(players, "Game is ending.\n");
+                struct player * winner;
+                for (int x = 0; x <MAX_CLIENTS; x++){
+                    if (players[x] != NULL) winner = players[x];
+                }
+                sprintf(buff, "|| Game is ending.\n|| The winner is: %s!\n|| Congratulations!\n", winner->name);
+                write_all(players, buff);
             }
         }
 
@@ -143,11 +148,22 @@ int main(int argc, char *argv[] ) {
                         // clients[x] = 0;
                         players[x] = 0;
                         if (game_status == 1){
-                            next_player_i = next_player_index(cur_player_index, players);
-                            timeout.tv_sec = 10;
-                            timeout.tv_usec = 0;
-                            snprintf(buff, BUFFER_SIZE, "|| It is %s's turn.\n|| The prompt is: %s\n", players[next_player_i]->name, prompt);
-                            write_all(players, buff);
+                            if (cur_players(players) == 1){ //check for end game condition
+                                temp_game_status = 0;
+                                struct player * winner;
+                                for (int x = 0; x <MAX_CLIENTS; x++){
+                                    if (players[x] != NULL) winner = players[x];
+                                }
+                                sprintf(buff, "|| Game is ending.\n|| The winner is: %s!\n|| Congratulations!\n", winner->name);
+                                write_all(players, buff);
+                            }
+                            else{
+                                next_player_i = next_player_index(cur_player_index, players);
+                                timeout.tv_sec = 10;
+                                timeout.tv_usec = 0;
+                                snprintf(buff, BUFFER_SIZE, "|| It is %s's turn.\n|| The prompt is: %s\n", players[next_player_i]->name, prompt);
+                                write_all(players, buff);
+                            }
                         }
                     }
                     else{
