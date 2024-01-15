@@ -48,13 +48,13 @@ int main(int argc, char *argv[] ) {
             fgets(buff, BUFFER_SIZE, stdin);
             int b = write(server_socket, buff, strlen(buff)+1);
             if (b==-1) err(46, "writing stdin failed\n");
-            printf("bytes sent: %d\n", b);
+            //printf("bytes sent: %d\n", b);
             
         }
 
         if (FD_ISSET(server_socket, &read_fds)) { //listening from server
             int bytes = read(server_socket, buff, BUFFER_SIZE);
-            printf("bytes from server: %d\n", bytes);
+            //printf("bytes from server: %d\n", bytes);
             stripNewLine(buff);
             if (bytes == -1) err(80, "check server exit failed\n");
             if (bytes == 0){ //server disconnect

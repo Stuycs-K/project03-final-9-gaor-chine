@@ -167,7 +167,7 @@ void write_all(struct player** ps, char * buff){
     strcat(temp, buff);
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL){
-            printf("%ld", strlen(temp));
+            //printf("%ld", strlen(temp));
             int b = write(ps[x]->sd, temp, strlen(temp)+1);
             if (b == -1) err(16, "server write broke");
         }
@@ -197,7 +197,7 @@ void chat_logic(struct player** ps, struct player* p, char* line, int* game_stat
     //printf("writing...\n");
     //printf("%d", (int)(sizeof(ps)/sizeof(struct player)));
     char buff[BUFFER_SIZE] = "";
-    printf("line: %s strlen(line): %ld\n", line, strlen(line));
+    //printf("line: %s strlen(line): %ld\n", line, strlen(line));
     for (int x = 0; x < MAX_CLIENTS; x++){
         if(ps[x] != NULL && ps[x]->sd != p->sd){ //do not write to sender
             if (*game_status == 1) {
@@ -208,8 +208,8 @@ void chat_logic(struct player** ps, struct player* p, char* line, int* game_stat
                 snprintf(buff, BUFFER_SIZE, "%s %s: %s\n", num_lives, p->name, line); //shows lives
             }
             else snprintf(buff, BUFFER_SIZE, "%s: %s\n", p->name, line);
-            printf("chat: %s\n", buff);
-            printf("writing to: %d\n", ps[x]->sd);
+            //printf("chat: %s\n", buff);
+            //printf("writing to: %d\n", ps[x]->sd);
             int b = write(ps[x]->sd, buff, strlen(buff)+1);
             if (b == -1) err(16, "server write broke");
         }

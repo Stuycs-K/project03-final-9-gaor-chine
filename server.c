@@ -94,16 +94,16 @@ int main(int argc, char *argv[] ) {
         if (FD_ISSET(listen_socket, &read_fds)) {
             //accept the connection
             int client_socket = server_tcp_handshake(listen_socket);
-            printf("client socket: %d", client_socket);
+            //printf("client socket: %d", client_socket);
             if (client_socket == -1) err(98, "server handshake failed");
             char name[NAME_SIZE] = "";
             read(client_socket, buff, BUFFER_SIZE); //read for username
             stripNewLine(buff);
             snprintf(name, NAME_SIZE, "%.90s", buff);
-            printf("name: %s\n", name);
+            //printf("name: %s\n", name);
             struct player * p = create_player(name, client_socket);
-            printf("client socket: %d\n", p->sd);
-            printf("lives: %d\n", p->lives);
+            //printf("client socket: %d\n", p->sd);
+            //printf("lives: %d\n", p->lives);
 
             for (int x = 0; x < MAX_CLIENTS; x++){
                 //printf("%d\n", clients[x]);
