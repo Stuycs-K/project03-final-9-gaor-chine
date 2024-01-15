@@ -184,6 +184,18 @@ void help(struct player *p){ //show all commands
     write(p->sd, buff, strlen(buff)+1);
 }
 
+void help(struct player *p){ //show how to play Word Bomb
+    char buff[BUFFER_SIZE] = "|| How to play:\n";
+    strcat(buff, "|| Players each begin with two lives. You can see other peoples lives\n");
+    strcat(buff, "|| next to their name. (O)(O) for two lives left and (O)(X) for one life life.\n");
+    strcat(buff, "|| Players will take turns submitting words that contain the prompt within them.\n");
+    strcat(buff, "|| Failure to do so within 10 seconds results in the bomb exploding and the player losing a life.\n");
+    strcat(buff, "|| If a player loses all their lives, they lose are removed from the game.\n");
+    strcat(buff, "|| Last player standing wins!\n");
+    //printf("%s", buff);
+    write(p->sd, buff, strlen(buff)+1);
+}
+
 void start_game(struct player **ps, int* game_status){ //starts the game
     *game_status = 1; //change to true
     int l = open("usedWords", O_CREAT|O_TRUNC,0666);
@@ -225,6 +237,7 @@ void command_logic(struct player **ps, struct player *p, char* line, int* temp_g
     parse_args(line, cmdargv);
     //printf("%s\n", cmdargv[0]);
     if (strcmp(cmdargv[0], "/help") == 0) help(p);
+    else if (strcmp(cmdargv[0], "/howtoplay")) how_to_play(p);
     else if (strcmp(cmdargv[0], "/start") == 0){
         if(*game_status == 1){
             sprintf(buff, "|| Game is in progress.\n");
@@ -246,6 +259,9 @@ void check_logic(struct player **ps, struct player *sent_p, int *temp_cur_p, int
     strcpy(promptbuff, *prompt);
     for(int i = 0; (promptbuff)[i]; i++){
         promptbuff[i] = tolower(promptbuff[i]);
+    }
+    for(int i = 0; (line)[i]; i++){
+        line[i] = tolower(line[i]);
     }
 
     if (strlen(line) < 3){
