@@ -19,7 +19,6 @@
 #define BUFFERSIZE 100
 #define READ 0
 #define WRITE 1
-// #define WRITE 1
 
 // void err(int i, char*message){
 //   if(i < 0){
@@ -27,6 +26,10 @@
 //   	exit(1);
 //   }
 // }
+
+// randPrompt returns a random 2-3 letter prompt read from prompts.txt
+// args:        none
+// returns:     buff: the prompt
 char * randPrompt(){
     char *buff = malloc(10);
     char str[100] = "";
@@ -44,7 +47,9 @@ char * randPrompt(){
     //printf("randomized prompt: %s\n strlen of prompt: %ld",buff, strlen(buff));
     return buff;
 }
-
+// create_player creates a new player struct
+// args:        name: name to be inputted by player; sd: socket descriptor of the player
+// returns:     a pointer to the player struct
 struct player* create_player(char *name, int sd){
     struct player *p = malloc(sizeof(struct player));
     strcpy(p->name, name);
@@ -52,23 +57,22 @@ struct player* create_player(char *name, int sd){
     p->sd = sd;
     return p;
 }
-
+// parse_args parses through a string and puts it into a char *[] to be exec'ed
+// args:        line: line to be parsed; args:array for the processed strings to be placed into
+// returns:     no return value
 void parse_args(char * line, char * args[]){
     char * linePointer = line;
     char * holder;
     int counter = 0;
-    while(holder = strsep(&linePointer, " ")){
+    while(holder = strsep(&linePointer, "@|~")){
         args[counter] = holder;
         counter ++;
     }
     args[counter] = 0;
 }
-/*
-parses words_alpha.txt for the inputed word
-returns 2 if word does not exist
-returns 1 if word exists but is used
-returns 0 of word exists
-*/
+// parse parses words_alpha.txt to check for words
+// args:        word inputted by player
+// returns:     0 if the word exists and has not been used, 1 if the word exists, but has been used, 2 if the word exists
 int parse(char *word){
     char cpy[100] = "";
     strcpy(cpy, word);
@@ -77,8 +81,8 @@ int parse(char *word){
     printf("size: %d\n", len);
     int f = fork();
     if(f == 0){
-        char front[256] = "grep ";
-        char back[] = " words_alpha.txt -w";
+        char front[256] = "grep@|~";
+        char back[] = "@|~words_alpha.txt@|~-w";
         strcat(front,word);
         strcat(front,back);
         parse_args(front,cmdargv);
@@ -106,7 +110,6 @@ int parse(char *word){
         printf("compared: %d\n",il);
         int l = open("usedWords", O_CREAT|O_EXCL,0666);
         FILE * usedWords = fopen("usedWords", "r+"); if(usedWords == NULL) printf("fopen failed\n");
-        // printf("read: %s\n",wds);
         strcat(cpy,"\n");
         while(fgets(wds,100,usedWords)!= NULL){
             if(strcmp(wds, cpy) == 0) return 1;
@@ -120,28 +123,9 @@ int parse(char *word){
     }
     return 0;
 }
-//---------------------------------------------------------------------------------------------
-// int main(int argc, char * argv[]){
-//     // printf("Tests:\n");
-//     // int i;
-//     // char a[]="hi";
-//     // char b[]="asjdfhajsf";
-//     // char c[]="hi";
-//     // char d[]="yes";
-//     // i = parse(a);
-//     // printf("returned: %d\n", i);
-//     // printf("--------------------------\n");
-//     // i = parse(b);
-//     // printf("returned: %d\n", i);
-//     // printf("--------------------------\n");
-//     // i = parse(c);
-//     // printf("returned: %d\n", i);
-//     // printf("--------------------------\n");
-//     // i = parse(d);
-//     // printf("returned: %d\n", i);
-//     randPrompt();
-// }
-
+// cur_players finds the current number of players connected to the server
+// args:        ps: a pointer to a pointer of player
+// returns:     cur_clients: the number of players connected
 int cur_players(struct player **ps){
     int cur_clients = 0;
     for (int x = 0; x < MAX_CLIENTS; x++){
@@ -154,7 +138,9 @@ int cur_players(struct player **ps){
     printf("\n");
     return cur_clients;
 }
-
+// next_player index gets the index of the next player inthe player**
+// args:        cur_plater_index: the index of the current player in the player**; ps: the player**
+// returns:     x: the index of the next player
 int next_player_index(int cur_player_index, struct player **ps){
     for (int x = cur_player_index + 1; x < MAX_CLIENTS; x++){
         if (ps[x] != NULL) return x;
@@ -163,7 +149,9 @@ int next_player_index(int cur_player_index, struct player **ps){
         if (ps[x] != NULL) return x;
     }
 }
-
+// write_all writes to all players connected to the server
+// args:        ps: the player** containing all the players; buff: the string to be written to all players
+// returns:     no return value
 void write_all(struct player** ps, char * buff){
     char temp[BUFFER_SIZE] = "";
     strcat(temp, buff);
@@ -175,7 +163,9 @@ void write_all(struct player** ps, char * buff){
         }
     }
 }
-
+// help generates a list of commands to be sent to a player
+// args:        p: the player
+// returns:     no return value
 void help(struct player *p){ //show all commands
     char buff[BUFFER_SIZE] = "|| Commands:\n";
     strcat(buff, "|| /help : show all commands\n");
@@ -184,7 +174,9 @@ void help(struct player *p){ //show all commands
     //printf("%s", buff);
     write(p->sd, buff, strlen(buff)+1);
 }
-
+// how_to_play returns a guide to be sent to a player
+// args:        p: the player
+// returns:     no return value
 void how_to_play(struct player *p){ //show how to play Word Bomb
     char buff[BUFFER_SIZE] = "|| How to play:\n";
     strcat(buff, "|| Players each begin with two lives. You can see other peoples lives\n");
@@ -196,7 +188,9 @@ void how_to_play(struct player *p){ //show how to play Word Bomb
     //printf("%s", buff);
     write(p->sd, buff, strlen(buff)+1);
 }
-
+// star_game starts the game
+// args:        ps: the player**, game_status:the current status of the game
+// returns:     no return value
 void start_game(struct player **ps, int* game_status){ //starts the game
     *game_status = 1; //change to true
     int l = open("usedWords", O_CREAT|O_TRUNC,0666);
@@ -205,7 +199,9 @@ void start_game(struct player **ps, int* game_status){ //starts the game
     }
     close(l);
 }
-
+// chat_logic handles the logic of the chat system in the game
+// args:        ps: the player**; p: the player; line: chat message from player; game_status: the status of the game
+// returns:     no return value
 void chat_logic(struct player** ps, struct player* p, char* line, int* game_status){
     //rot13(line);
 
@@ -230,7 +226,9 @@ void chat_logic(struct player** ps, struct player* p, char* line, int* game_stat
         }
     }
 }
-
+// command_logic handles the logic of the commands based off the status of the game
+// args:        ps: the player**; p: the player; line: cp,,amd from player; temp_gamestatus: game status in case game hasnt started yet; game_status: the status of the game
+// returns:     no return value
 void command_logic(struct player **ps, struct player *p, char* line, int* temp_game_status, int* game_status){
     printf("game_status: %d\n", *game_status);
     char * cmdargv[64];
@@ -252,7 +250,9 @@ void command_logic(struct player **ps, struct player *p, char* line, int* temp_g
     }
     else write(p->sd, buff, strlen(buff)+1);
 }
-
+// ccheck_logic handles the rules of the game
+// args:        ps: the player**; sent_p: the player who sent the line; temp_cur_p: a temporary current player inded; cur_p: index of where in the player** we are located; line: entry from player;
+// returns:     no return value
 void check_logic(struct player **ps, struct player *sent_p, int *temp_cur_p, int *cur_p, char* line,
                 int* game_status, struct timeval *timeout, char** prompt){
 
