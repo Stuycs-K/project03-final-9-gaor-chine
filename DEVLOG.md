@@ -58,6 +58,17 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 ### 2024-01-13 - Helper functions and more debugging
 - created helper function for checking the word inputted
 - spent a lot a lot of time trying to debug random characters being printed, unsucessful
+  
+### 2024-01-14 - Debugging
+- spent a lot a lot of time trying to debug random characters being printed, unsucessful
+- discovered another bug, not sure if related to above, random sockets are added
+
+### 2024-01-15 - Debugging, more input checks, game end conditions, limit connections
+- finally managed to fix the bug, honestly dont know where it went wrong
+- added new command /howtoplay to show rules and how to play
+- added checks for the minimum length of an input and for the input to contain non-case-sensitive prompt
+- added disconnect upon losing all lives/death
+- closed connections made after game is in session
 
 ## Edmund Chin
 
