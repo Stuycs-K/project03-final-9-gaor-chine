@@ -37,7 +37,7 @@ int main(int argc, char *argv[] ) {
         
         FD_ZERO(&read_fds);
         //FD_ZERO(&cur_player_only);
-        FD_SET(listen_socket,&read_fds);
+        FD_SET(listen_socket,&read_fds); 
         char buff[BUFFER_SIZE]="";
 
         for (int x = 0; x < MAX_CLIENTS; x++){
@@ -127,32 +127,39 @@ int main(int argc, char *argv[] ) {
             if (client_socket == -1) err(98, "server handshake failed");
             char name[NAME_SIZE] = "";
             read(client_socket, buff, BUFFER_SIZE); //read for username
-            stripNewLine(buff);
-            snprintf(name, NAME_SIZE, "%.90s", buff);
-            //printf("name: %s\n", name);
-            struct player * p = create_player(name, client_socket);
-            //printf("client socket: %d\n", p->sd);
-            //printf("lives: %d\n", p->lives);
-
-            for (int x = 0; x < MAX_CLIENTS; x++){
-                //printf("%d\n", clients[x]);
-                if (players[x] == NULL){
-                    players[x] = p;
-                    printf("%d sd %d added to client list.\n", x, p->sd);
-                    break; //to add once
-                }
+            if (game_status == 1) {
+                sprintf(buff, "|| Game in progress, unable to join.\n");
+                write(client_socket, buff, strlen(buff)+1);
+                close(client_socket);
             }
-            sprintf(buff, "|| Welcome to Word Bomb, %s!\n", p->name);
-            strcat(buff, "|| Type \"/help\" for all commands.\n");
-            write(p->sd, buff, strlen(buff)+1);
-            printf("Connected, waiting for data.\n");
-            char buff1[BUFFER_SIZE] = "";
-            sprintf(buff1, "|| %s joined the game.\n", p->name);
-            write_all(players, buff1);
+            else{
+                stripNewLine(buff);
+                snprintf(name, NAME_SIZE, "%.90s", buff);
+                //printf("name: %s\n", name);
+                struct player * p = create_player(name, client_socket);
+                //printf("client socket: %d\n", p->sd);
+                //printf("lives: %d\n", p->lives);
 
-            //subserver_logic(client_socket);
-            
-            //close(client_socket);
+                for (int x = 0; x < MAX_CLIENTS; x++){
+                    //printf("%d\n", clients[x]);
+                    if (players[x] == NULL){
+                        players[x] = p;
+                        printf("%d sd %d added to client list.\n", x, p->sd);
+                        break; //to add once
+                    }
+                }
+                sprintf(buff, "|| Welcome to Word Bomb, %s!\n", p->name);
+                strcat(buff, "|| Type \"/help\" for all commands.\n");
+                write(p->sd, buff, strlen(buff)+1);
+                printf("Connected, waiting for data.\n");
+                char buff1[BUFFER_SIZE] = "";
+                sprintf(buff1, "|| %s joined the game.\n", p->name);
+                write_all(players, buff1);
+
+                //subserver_logic(client_socket);
+                
+                //close(client_socket);
+            }
         }
 
         //if existing client
