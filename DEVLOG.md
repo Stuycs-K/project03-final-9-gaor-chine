@@ -89,3 +89,18 @@ I discussed possible project ideas in class (20 mins) with my partner. We set up
 ### 2024-01-08 - redirection is not redirecting
 - tried to debug the interaction between grep and redirecting it into a text file
 - used last project as a base for the code but still redirects a unidentifiable string
+### 2024-01-09 - debugging
+- messed around with redirection to see if that was the point fo failure
+### 2024-01-10 - merge conflict + debugging
+- debugging other stuff besides redirection
+- deleted a lot of code accidentally...
+### 2024-01-11 - parse is functional
+- found the bug that caused extra characters 
+### 2024-01-12 - finished the rest of parse
+- added the used words functionality to parse
+### 2024-01-13 - randPrompts
+- wrote funciton to generate random prompts based off a file
+### 2024-01-15 - function headers + readme
+- fixed a bug caused by parse logic
+- did readme
+- added function headers to gameFunctions.c functions
