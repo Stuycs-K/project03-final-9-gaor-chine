@@ -82,13 +82,37 @@ int main(int argc, char *argv[] ) {
         int i = select(max_sd+1, &read_fds, NULL, NULL, &timeout);
         if (i == 0) { //timeout occured
             if (game_status == 1){
-                char buff1[300] = "";
-                snprintf(buff1, 300, "|| The bomb exploded! %s lost a life.\n", player_turn->name);
+                //char buff[300] = "";
+                snprintf(buff, 300, "|| The bomb exploded! %s lost a life.\n", player_turn->name);
                 (player_turn->lives)--;
-                next_player_i = next_player_index(cur_player_index, players);
-                char buff2[300] = "";
-                snprintf(buff2, 300, "|| It is %s's turn.\n|| The prompt is: %s\n", players[next_player_i]->name, prompt);
-                snprintf(buff, BUFFER_SIZE, "%s%s", buff1, buff2);
+                if (player_turn->lives == 0){
+                    char buff2[300]="";
+                    snprintf(buff2, 300, "|| %s has died! %d players remaining.\n", player_turn->name, cur_players(players)-1);
+                    strcat(buff, buff2);
+                    //write_all(players, buff2);
+                    for(int x = 0; x < MAX_CLIENTS; x++){ //remove from player list and disconnect
+                        if (players[x]!=NULL){
+                            if (player_turn->sd == players[x]->sd) players[x] = 0;
+                        }
+                    }
+                    close(player_turn->sd);
+                }
+                if (cur_players(players) == 1){ //check for end game condition
+                    struct player * winner;
+                    for (int x = 0; x <MAX_CLIENTS; x++){
+                        if (players[x] != NULL) winner = players[x];
+                    }
+                    char buff2[300]="";
+                    snprintf(buff2, 300, "|| Game is ending.\n|| The winner is: %s!\n|| Congratulations!\n", winner->name);
+                    strcat(buff, buff2);
+                    temp_game_status = 0;
+                }
+                else{
+                    next_player_i = next_player_index(cur_player_index, players);
+                    char buff2[300] = "";
+                    snprintf(buff2, 300, "|| It is %s's turn.\n|| The prompt is: %s\n", players[next_player_i]->name, prompt);
+                    strcat(buff, buff2);
+                }
                 write_all(players, buff);
             }
             timeout.tv_sec = 10;
@@ -122,7 +146,9 @@ int main(int argc, char *argv[] ) {
             strcat(buff, "|| Type \"/help\" for all commands.\n");
             write(p->sd, buff, strlen(buff)+1);
             printf("Connected, waiting for data.\n");
-
+            char buff1[BUFFER_SIZE] = "";
+            sprintf(buff1, "|| %s joined the game.\n", p->name);
+            write_all(players, buff1);
 
             //subserver_logic(client_socket);
             
@@ -145,9 +171,10 @@ int main(int argc, char *argv[] ) {
                     if (bytes == -1) err(80, "check client exit failed\n");
                     if (bytes == 0){
                         printf("client %d has disconnected.\n", x);
-                        // clients[x] = 0;
-                        players[x] = 0;
                         if (game_status == 1){
+                            char buff1[BUFFER_SIZE]="";
+                            sprintf(buff1, "%s left the game. %d players remaining.\n", players[x]->name, cur_players(players)-1);
+                            write_all(players, buff1);
                             if (cur_players(players) == 1){ //check for end game condition
                                 temp_game_status = 0;
                                 struct player * winner;
@@ -165,6 +192,12 @@ int main(int argc, char *argv[] ) {
                                 write_all(players, buff);
                             }
                         }
+                        else{
+                            char buff1[BUFFER_SIZE]="";
+                            sprintf(buff1, "%s left the game.", players[x]->name);
+                            write_all(players, buff1);
+                        }
+                        players[x] = 0;
                     }
                     else{
                         stripNewLine(temp);

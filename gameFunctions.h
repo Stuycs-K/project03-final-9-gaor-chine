@@ -15,6 +15,7 @@ void write_all(struct player** ps, char * buff);
 void chat_logic(struct player** ps, struct player* p, char* line, int* game_status);
 void command_logic(struct player **ps, struct player *p, char* line, int* temp_game_status, int* game_status);
 void help(struct player *p);
+void how_to_play(struct player *p);
 void start_game(struct player **ps, int* gs_pointer);
 void check_logic(struct player **ps, struct player *sent_p, int *temp_cur_p, int *cur_p, char* line,
                 int* game_status, struct timeval *timeout, char** prompt);

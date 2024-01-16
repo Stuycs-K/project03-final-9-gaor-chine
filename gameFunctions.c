@@ -179,15 +179,16 @@ void write_all(struct player** ps, char * buff){
 void help(struct player *p){ //show all commands
     char buff[BUFFER_SIZE] = "|| Commands:\n";
     strcat(buff, "|| /help : show all commands\n");
+    strcat(buff, "|| /howtoplay : see instructions on how to play\n");
     strcat(buff, "|| /start : start the Word Bomb game\n");
     //printf("%s", buff);
     write(p->sd, buff, strlen(buff)+1);
 }
 
-void help(struct player *p){ //show how to play Word Bomb
+void how_to_play(struct player *p){ //show how to play Word Bomb
     char buff[BUFFER_SIZE] = "|| How to play:\n";
     strcat(buff, "|| Players each begin with two lives. You can see other peoples lives\n");
-    strcat(buff, "|| next to their name. (O)(O) for two lives left and (O)(X) for one life life.\n");
+    strcat(buff, "|| next to their name. (O)(O) for two lives left and (O)(X) for one life left.\n");
     strcat(buff, "|| Players will take turns submitting words that contain the prompt within them.\n");
     strcat(buff, "|| Failure to do so within 10 seconds results in the bomb exploding and the player losing a life.\n");
     strcat(buff, "|| If a player loses all their lives, they lose are removed from the game.\n");
@@ -237,7 +238,7 @@ void command_logic(struct player **ps, struct player *p, char* line, int* temp_g
     parse_args(line, cmdargv);
     //printf("%s\n", cmdargv[0]);
     if (strcmp(cmdargv[0], "/help") == 0) help(p);
-    else if (strcmp(cmdargv[0], "/howtoplay")) how_to_play(p);
+    else if (strcmp(cmdargv[0], "/howtoplay") == 0) how_to_play(p);
     else if (strcmp(cmdargv[0], "/start") == 0){
         if(*game_status == 1){
             sprintf(buff, "|| Game is in progress.\n");
