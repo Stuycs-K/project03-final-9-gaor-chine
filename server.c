@@ -109,6 +109,7 @@ int main(int argc, char *argv[] ) {
                 }
                 else{
                     next_player_i = next_player_index(cur_player_index, players);
+                    strcpy(prompt, randPrompt());
                     char buff2[300] = "";
                     snprintf(buff2, 300, "|| It is %s's turn.\n|| The prompt is: %s\n", players[next_player_i]->name, prompt);
                     strcat(buff, buff2);
