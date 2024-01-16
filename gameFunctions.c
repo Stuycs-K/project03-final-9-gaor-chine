@@ -64,7 +64,7 @@ void parse_args(char * line, char * args[]){
     char * linePointer = line;
     char * holder;
     int counter = 0;
-    while(holder = strsep(&linePointer, "@|~")){
+    while(holder = strsep(&linePointer, "@")){
         args[counter] = holder;
         counter ++;
     }
@@ -81,8 +81,8 @@ int parse(char *word){
     printf("size: %d\n", len);
     int f = fork();
     if(f == 0){
-        char front[256] = "grep@|~";
-        char back[] = "@|~words_alpha.txt@|~-w";
+        char front[256] = "grep@";
+        char back[] = "@words_alpha.txt@-w";
         strcat(front,word);
         strcat(front,back);
         parse_args(front,cmdargv);
